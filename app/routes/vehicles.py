@@ -1,10 +1,12 @@
 import os
 import uuid
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from io import BytesIO
+from datetime import datetime
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, Response
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Vehicle, VehicleSpec, FuelLog, Expense, User, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES
+from app.models import Vehicle, VehicleSpec, FuelLog, Expense, User, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, AppSettings
 
 bp = Blueprint('vehicles', __name__, url_prefix='/vehicles')
 
@@ -296,3 +298,66 @@ def unarchive(vehicle_id):
     db.session.commit()
     flash(f'Vehicle "{vehicle.name}" has been restored', 'success')
     return redirect(url_for('vehicles.index'))
+
+
+@bp.route('/<int:vehicle_id>/report')
+@login_required
+def report(vehicle_id):
+    """Generate a PDF report for a vehicle"""
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+
+    # Check access
+    if vehicle not in current_user.get_all_vehicles():
+        flash('Access denied', 'error')
+        return redirect(url_for('vehicles.index'))
+
+    try:
+        from weasyprint import HTML, CSS
+    except ImportError:
+        flash('PDF generation is not available. Please install weasyprint.', 'error')
+        return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
+    # Gather all data for the report
+    fuel_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc()).all()
+    expenses = vehicle.expenses.order_by(Expense.date.desc()).all()
+    specs = vehicle.specs.all()
+
+    # Calculate statistics
+    stats = {
+        'total_fuel_cost': vehicle.get_total_fuel_cost(),
+        'total_expense_cost': vehicle.get_total_expense_cost(),
+        'total_cost': vehicle.get_total_cost(),
+        'total_distance': vehicle.get_total_distance(),
+        'avg_consumption': vehicle.get_average_consumption(),
+        'fuel_logs_count': len(fuel_logs),
+        'expenses_count': len(expenses)
+    }
+
+    # Get branding
+    branding = AppSettings.get_all_branding()
+
+    # Render HTML template
+    html_content = render_template(
+        'vehicles/report_pdf.html',
+        vehicle=vehicle,
+        fuel_logs=fuel_logs,
+        expenses=expenses,
+        specs=specs,
+        stats=stats,
+        user=current_user,
+        branding=branding,
+        generated_at=datetime.utcnow()
+    )
+
+    # Generate PDF
+    pdf = HTML(string=html_content, base_url=request.host_url).write_pdf()
+
+    # Generate filename
+    safe_name = vehicle.name.replace(' ', '_').replace('/', '-')
+    filename = f'{safe_name}_report_{datetime.now().strftime("%Y%m%d")}.pdf'
+
+    return Response(
+        pdf,
+        mimetype='application/pdf',
+        headers={'Content-Disposition': f'attachment; filename={filename}'}
+    )
