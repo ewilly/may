@@ -226,45 +226,53 @@
                         <div class="p-6 space-y-4">
                             <div class="flex items-center justify-between py-3">
                                 <div>
+                                    <h3 class="text-sm font-medium text-gray-900">Hammond</h3>
+                                    <p class="text-sm text-gray-500">Import from Hammond SQLite database (.db file)</p>
+                                </div>
+                                <form method="POST" action="{{ url_for('api.import_hammond') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                                    <input type="file" name="file" accept=".db,.sqlite,.sqlite3" required
+                                           class="text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                                    <button type="submit"
+                                            class="w-24 text-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        Import
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="flex items-center justify-between py-3 border-t border-gray-200">
+                                <div>
+                                    <h3 class="text-sm font-medium text-gray-900">Clarkson</h3>
+                                    <p class="text-sm text-gray-500">Import from Clarkson MySQL dump (.sql file)</p>
+                                </div>
+                                <form method="POST" action="{{ url_for('api.import_clarkson') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                                    <input type="file" name="file" accept=".sql" required
+                                           class="text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                                    <button type="submit"
+                                            class="w-24 text-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        Import
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="flex items-center justify-between py-3 border-t border-gray-200">
+                                <div>
                                     <h3 class="text-sm font-medium text-gray-900">Fuelly</h3>
-                                    <p class="text-sm text-gray-500">Import your vehicle and fuel log data from Fuelly CSV export</p>
+                                    <p class="text-sm text-gray-500">Import from Fuelly CSV export</p>
                                 </div>
                                 <button type="button" disabled
-                                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 opacity-50 cursor-not-allowed">
-                                    Coming Soon
+                                        class="w-24 text-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed">
+                                    Soon
                                 </button>
                             </div>
 
                             <div class="flex items-center justify-between py-3 border-t border-gray-200">
                                 <div>
                                     <h3 class="text-sm font-medium text-gray-900">Drivvo</h3>
-                                    <p class="text-sm text-gray-500">Import your data from Drivvo backup files</p>
+                                    <p class="text-sm text-gray-500">Import from Drivvo backup files</p>
                                 </div>
                                 <button type="button" disabled
-                                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 opacity-50 cursor-not-allowed">
-                                    Coming Soon
-                                </button>
-                            </div>
-
-                            <div class="flex items-center justify-between py-3 border-t border-gray-200">
-                                <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Clarkson</h3>
-                                    <p class="text-sm text-gray-500">Migrate from Clarkson database</p>
-                                </div>
-                                <button type="button" disabled
-                                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 opacity-50 cursor-not-allowed">
-                                    Coming Soon
-                                </button>
-                            </div>
-
-                            <div class="flex items-center justify-between py-3 border-t border-gray-200">
-                                <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Hammond</h3>
-                                    <p class="text-sm text-gray-500">Migrate from Hammond database</p>
-                                </div>
-                                <button type="button" disabled
-                                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 opacity-50 cursor-not-allowed">
-                                    Coming Soon
+                                        class="w-24 text-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed">
+                                    Soon
                                 </button>
                             </div>
                         </div>

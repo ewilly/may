@@ -1,9 +1,12 @@
 import csv
 import io
 import json
+import os
+import sqlite3
+import tempfile
 from functools import wraps
 from datetime import datetime
-from flask import Blueprint, jsonify, request, send_from_directory, current_app, url_for, render_template, Response
+from flask import Blueprint, jsonify, request, send_from_directory, current_app, url_for, render_template, Response, flash, redirect
 from flask_login import login_required, current_user
 from app import db
 from app.models import User, Vehicle, VehicleSpec, FuelLog, Expense, EXPENSE_CATEGORIES
@@ -836,3 +839,382 @@ def export_json():
         mimetype='application/json',
         headers={'Content-Disposition': f'attachment; filename={filename}'}
     )
+
+
+# =============================================================================
+# Data Import (Web UI routes, session-authenticated)
+# =============================================================================
+
+# Hammond fuel unit mapping
+HAMMOND_FUEL_UNITS = {
+    'LITRE': 'L',
+    'GALLON': 'gal',
+    'US_GALLON': 'us_gal',
+}
+
+# Hammond fuel type mapping
+HAMMOND_FUEL_TYPES = {
+    'PETROL': 'petrol',
+    'DIESEL': 'diesel',
+    'ETHANOL': 'e85',
+    'LPG': 'lpg',
+    'ELECTRIC': 'electric',
+    'HYBRID': 'hybrid',
+}
+
+# Hammond distance unit mapping
+HAMMOND_DISTANCE_UNITS = {
+    'MILES': 'mi',
+    'KILOMETERS': 'km',
+}
+
+# Clarkson fuel type mapping (int to string)
+CLARKSON_FUEL_TYPES = {
+    1: 'petrol',
+    2: 'diesel',
+    3: 'e85',
+    4: 'lpg',
+}
+
+# Clarkson distance unit mapping
+CLARKSON_DISTANCE_UNITS = {
+    1: 'mi',
+    2: 'km',
+}
+
+# Clarkson fuel unit mapping
+CLARKSON_FUEL_UNITS = {
+    1: 'L',
+    2: 'gal',
+    3: 'us_gal',
+}
+
+
+@bp.route('/import/hammond', methods=['POST'])
+@login_required
+def import_hammond():
+    """
+    Import data from Hammond SQLite database.
+    Expects a .db or .sqlite file upload.
+    """
+    if 'file' not in request.files:
+        flash('No file uploaded', 'error')
+        return redirect(url_for('auth.settings') + '#integrations')
+
+    file = request.files['file']
+    if not file.filename:
+        flash('No file selected', 'error')
+        return redirect(url_for('auth.settings') + '#integrations')
+
+    # Save uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.db') as tmp:
+        file.save(tmp.name)
+        tmp_path = tmp.name
+
+    try:
+        conn = sqlite3.connect(tmp_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # Track import statistics
+        stats = {'vehicles': 0, 'fuel_logs': 0, 'expenses': 0}
+        vehicle_id_map = {}  # Hammond vehicle ID -> May vehicle ID
+
+        # Import vehicles
+        try:
+            cursor.execute('SELECT * FROM vehicles')
+            hammond_vehicles = cursor.fetchall()
+
+            for hv in hammond_vehicles:
+                # Map fuel type
+                fuel_type = HAMMOND_FUEL_TYPES.get(hv['fuel_type'], 'petrol') if hv['fuel_type'] else 'petrol'
+
+                vehicle = Vehicle(
+                    owner_id=current_user.id,
+                    name=hv['nickname'] or f"{hv['make']} {hv['model']}".strip() or 'Imported Vehicle',
+                    vehicle_type='car',  # Hammond doesn't distinguish vehicle types
+                    make=hv['make'],
+                    model=hv['model'],
+                    year=hv['year_of_manufacture'],
+                    registration=hv['registration'],
+                    vin=hv['vin'],
+                    fuel_type=fuel_type,
+                    tank_capacity=None,
+                    notes=f"Imported from Hammond (ID: {hv['id']})"
+                )
+                db.session.add(vehicle)
+                db.session.flush()
+                vehicle_id_map[hv['id']] = vehicle.id
+                stats['vehicles'] += 1
+
+        except sqlite3.OperationalError:
+            pass  # Table doesn't exist
+
+        # Import fillups (fuel logs)
+        try:
+            cursor.execute('SELECT * FROM fillups')
+            hammond_fillups = cursor.fetchall()
+
+            for hf in hammond_fillups:
+                vehicle_id = vehicle_id_map.get(hf['vehicle_id'])
+                if not vehicle_id:
+                    continue
+
+                # Parse date
+                try:
+                    if hf['date']:
+                        # Hammond stores dates as ISO strings
+                        date = datetime.fromisoformat(hf['date'].replace('Z', '+00:00')).date()
+                    else:
+                        date = datetime.utcnow().date()
+                except (ValueError, TypeError):
+                    date = datetime.utcnow().date()
+
+                log = FuelLog(
+                    vehicle_id=vehicle_id,
+                    user_id=current_user.id,
+                    date=date,
+                    odometer=float(hf['odo_reading']) if hf['odo_reading'] else 0,
+                    volume=float(hf['fuel_quantity']) if hf['fuel_quantity'] else None,
+                    price_per_unit=float(hf['per_unit_price']) if hf['per_unit_price'] else None,
+                    total_cost=float(hf['total_amount']) if hf['total_amount'] else None,
+                    is_full_tank=bool(hf['is_tank_full']) if hf['is_tank_full'] is not None else True,
+                    is_missed=bool(hf['has_missed_fillup']) if hf['has_missed_fillup'] is not None else False,
+                    station=hf['filling_station'],
+                    notes=hf['comments']
+                )
+                db.session.add(log)
+                stats['fuel_logs'] += 1
+
+        except sqlite3.OperationalError:
+            pass  # Table doesn't exist
+
+        # Import expenses
+        try:
+            cursor.execute('SELECT * FROM expenses')
+            hammond_expenses = cursor.fetchall()
+
+            for he in hammond_expenses:
+                vehicle_id = vehicle_id_map.get(he['vehicle_id'])
+                if not vehicle_id:
+                    continue
+
+                # Parse date
+                try:
+                    if he['date']:
+                        date = datetime.fromisoformat(he['date'].replace('Z', '+00:00')).date()
+                    else:
+                        date = datetime.utcnow().date()
+                except (ValueError, TypeError):
+                    date = datetime.utcnow().date()
+
+                # Map expense type
+                expense_type = (he['expense_type'] or 'other').lower()
+                valid_categories = [c[0] for c in EXPENSE_CATEGORIES]
+                if expense_type not in valid_categories:
+                    expense_type = 'other'
+
+                expense = Expense(
+                    vehicle_id=vehicle_id,
+                    user_id=current_user.id,
+                    date=date,
+                    category=expense_type,
+                    description=he['expense_type'] or 'Imported expense',
+                    cost=float(he['amount']) if he['amount'] else 0,
+                    odometer=float(he['odo_reading']) if he['odo_reading'] else None,
+                    notes=he['comments']
+                )
+                db.session.add(expense)
+                stats['expenses'] += 1
+
+        except sqlite3.OperationalError:
+            pass  # Table doesn't exist
+
+        db.session.commit()
+        conn.close()
+
+        flash(f"Hammond import complete: {stats['vehicles']} vehicles, {stats['fuel_logs']} fuel logs, {stats['expenses']} expenses", 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Import failed: {str(e)}', 'error')
+
+    finally:
+        # Clean up temp file
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+    return redirect(url_for('auth.settings') + '#integrations')
+
+
+@bp.route('/import/clarkson', methods=['POST'])
+@login_required
+def import_clarkson():
+    """
+    Import data from Clarkson MySQL database.
+    Expects a .sql dump file upload.
+    """
+    if 'file' not in request.files:
+        flash('No file uploaded', 'error')
+        return redirect(url_for('auth.settings') + '#integrations')
+
+    file = request.files['file']
+    if not file.filename:
+        flash('No file selected', 'error')
+        return redirect(url_for('auth.settings') + '#integrations')
+
+    try:
+        # Read SQL dump content
+        content = file.read().decode('utf-8', errors='ignore')
+
+        # Track import statistics
+        stats = {'vehicles': 0, 'fuel_logs': 0}
+        vehicle_id_map = {}  # Clarkson vehicle ID -> May vehicle ID
+
+        # Parse INSERT statements for Vehicles table
+        # Clarkson format: INSERT INTO `Vehicles` VALUES (id, userId, name, registration, make, model, yearOfManufacture, engineSizeCC, fuelType, active)
+        import re
+
+        # Find Vehicles INSERT statements
+        vehicle_pattern = r"INSERT INTO [`']?Vehicles[`']?\s+(?:VALUES\s*)?\(([^)]+)\)"
+        vehicle_matches = re.findall(vehicle_pattern, content, re.IGNORECASE)
+
+        # Also try multi-value inserts
+        vehicle_multi_pattern = r"INSERT INTO [`']?Vehicles[`']?[^;]*VALUES\s*((?:\([^)]+\)\s*,?\s*)+)"
+        vehicle_multi_matches = re.findall(vehicle_multi_pattern, content, re.IGNORECASE)
+
+        for match in vehicle_multi_matches:
+            # Extract individual value tuples
+            tuples = re.findall(r'\(([^)]+)\)', match)
+            vehicle_matches.extend(tuples)
+
+        for values_str in vehicle_matches:
+            try:
+                # Parse CSV-like values (handling quoted strings)
+                values = parse_sql_values(values_str)
+                if len(values) >= 9:
+                    clarkson_id = int(values[0]) if values[0] else None
+                    name = clean_sql_string(values[2])
+                    registration = clean_sql_string(values[3])
+                    make = clean_sql_string(values[4])
+                    model = clean_sql_string(values[5])
+                    year = int(values[6]) if values[6] and values[6] != 'NULL' else None
+                    fuel_type_id = int(values[8]) if values[8] and values[8] != 'NULL' else 1
+
+                    fuel_type = CLARKSON_FUEL_TYPES.get(fuel_type_id, 'petrol')
+
+                    vehicle = Vehicle(
+                        owner_id=current_user.id,
+                        name=name or f"{make} {model}".strip() or 'Imported Vehicle',
+                        vehicle_type='car',
+                        make=make,
+                        model=model,
+                        year=year,
+                        registration=registration,
+                        fuel_type=fuel_type,
+                        notes=f"Imported from Clarkson (ID: {clarkson_id})"
+                    )
+                    db.session.add(vehicle)
+                    db.session.flush()
+                    if clarkson_id:
+                        vehicle_id_map[clarkson_id] = vehicle.id
+                    stats['vehicles'] += 1
+
+            except (ValueError, IndexError) as e:
+                continue
+
+        # Find Fuel INSERT statements
+        # Clarkson format: INSERT INTO `Fuel` VALUES (id, vehicleId, fuelAmount, fuelUnitCost, totalCost, odometerReading, dateTime, fullTank, missedFillUp, userId, fuelUnit, location, lat, lng)
+        fuel_pattern = r"INSERT INTO [`']?Fuel[`']?\s+(?:VALUES\s*)?\(([^)]+)\)"
+        fuel_matches = re.findall(fuel_pattern, content, re.IGNORECASE)
+
+        fuel_multi_pattern = r"INSERT INTO [`']?Fuel[`']?[^;]*VALUES\s*((?:\([^)]+\)\s*,?\s*)+)"
+        fuel_multi_matches = re.findall(fuel_multi_pattern, content, re.IGNORECASE)
+
+        for match in fuel_multi_matches:
+            tuples = re.findall(r'\(([^)]+)\)', match)
+            fuel_matches.extend(tuples)
+
+        for values_str in fuel_matches:
+            try:
+                values = parse_sql_values(values_str)
+                if len(values) >= 10:
+                    clarkson_vehicle_id = int(values[1]) if values[1] else None
+                    vehicle_id = vehicle_id_map.get(clarkson_vehicle_id)
+                    if not vehicle_id:
+                        continue
+
+                    # Parse date
+                    date_str = clean_sql_string(values[6])
+                    try:
+                        date = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').date() if date_str else datetime.utcnow().date()
+                    except ValueError:
+                        try:
+                            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                        except ValueError:
+                            date = datetime.utcnow().date()
+
+                    station = clean_sql_string(values[11]) if len(values) > 11 else None
+
+                    log = FuelLog(
+                        vehicle_id=vehicle_id,
+                        user_id=current_user.id,
+                        date=date,
+                        odometer=float(values[5]) if values[5] and values[5] != 'NULL' else 0,
+                        volume=float(values[2]) if values[2] and values[2] != 'NULL' else None,
+                        price_per_unit=float(values[3]) if values[3] and values[3] != 'NULL' else None,
+                        total_cost=float(values[4]) if values[4] and values[4] != 'NULL' else None,
+                        is_full_tank=values[7] == '1' if values[7] else True,
+                        is_missed=values[8] == '1' if values[8] else False,
+                        station=station,
+                    )
+                    db.session.add(log)
+                    stats['fuel_logs'] += 1
+
+            except (ValueError, IndexError) as e:
+                continue
+
+        db.session.commit()
+        flash(f"Clarkson import complete: {stats['vehicles']} vehicles, {stats['fuel_logs']} fuel logs", 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Import failed: {str(e)}', 'error')
+
+    return redirect(url_for('auth.settings') + '#integrations')
+
+
+def parse_sql_values(values_str):
+    """Parse SQL INSERT values handling quoted strings and NULLs"""
+    values = []
+    current = ''
+    in_quotes = False
+    quote_char = None
+
+    for char in values_str:
+        if char in ("'", '"') and not in_quotes:
+            in_quotes = True
+            quote_char = char
+        elif char == quote_char and in_quotes:
+            in_quotes = False
+            quote_char = None
+        elif char == ',' and not in_quotes:
+            values.append(current.strip())
+            current = ''
+            continue
+        current += char
+
+    if current:
+        values.append(current.strip())
+
+    return values
+
+
+def clean_sql_string(value):
+    """Clean a SQL string value, removing quotes and handling NULL"""
+    if not value or value.upper() == 'NULL':
+        return None
+    value = value.strip()
+    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+        value = value[1:-1]
+    return value.replace("\\'", "'").replace('\\"', '"')
