@@ -8,3 +8,4 @@ python-dotenv>=1.0.0
 pillow>=10.4.0
 gunicorn>=21.2.0
 weasyprint>=62.0
+requests>=2.31.0
