@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Vehicle, VehicleSpec, FuelLog, Expense, User, Reminder, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, AppSettings
+from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, AppSettings
 
 bp = Blueprint('vehicles', __name__, url_prefix='/vehicles')
 
@@ -124,6 +124,9 @@ def view(vehicle_id):
     # Get reminders for this vehicle (not completed, ordered by due date)
     reminders = vehicle.reminders.filter_by(is_completed=False).order_by(Reminder.due_date).all()
 
+    # Get parts for this vehicle
+    parts = vehicle.parts.order_by(VehiclePart.part_type, VehiclePart.name).all()
+
     # Check if DVLA integration is configured
     from app.services.dvla import DVLAService
     dvla_configured = DVLAService.is_configured()
@@ -136,6 +139,8 @@ def view(vehicle_id):
                            stats=stats,
                            reminders=reminders,
                            reminder_types=REMINDER_TYPES,
+                           parts=parts,
+                           part_types=PART_TYPES,
                            dvla_configured=dvla_configured)
 
 
@@ -371,3 +376,133 @@ def report(vehicle_id):
         mimetype='application/pdf',
         headers={'Content-Disposition': f'attachment; filename={filename}'}
     )
+
+
+# --- Vehicle Parts CRUD ---
+
+@bp.route('/<int:vehicle_id>/parts')
+@login_required
+def parts(vehicle_id):
+    """List all parts for a vehicle"""
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+
+    # Check access
+    if vehicle not in current_user.get_all_vehicles():
+        flash('Access denied', 'error')
+        return redirect(url_for('vehicles.index'))
+
+    # Get parts grouped by type
+    parts = vehicle.parts.order_by(VehiclePart.part_type, VehiclePart.name).all()
+
+    # Group parts by type for display
+    parts_by_type = {}
+    for part in parts:
+        type_label = dict(PART_TYPES).get(part.part_type, part.part_type)
+        if type_label not in parts_by_type:
+            parts_by_type[type_label] = []
+        parts_by_type[type_label].append(part)
+
+    return render_template('vehicles/parts.html',
+                           vehicle=vehicle,
+                           parts=parts,
+                           parts_by_type=parts_by_type,
+                           part_types=PART_TYPES)
+
+
+@bp.route('/<int:vehicle_id>/parts/new', methods=['GET', 'POST'])
+@login_required
+def new_part(vehicle_id):
+    """Add a new part to a vehicle"""
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+
+    # Check access
+    if vehicle not in current_user.get_all_vehicles():
+        flash('Access denied', 'error')
+        return redirect(url_for('vehicles.index'))
+
+    if request.method == 'POST':
+        part = VehiclePart(
+            vehicle_id=vehicle.id,
+            user_id=current_user.id,
+            name=request.form.get('name'),
+            part_type=request.form.get('part_type'),
+            specification=request.form.get('specification') or None,
+            quantity=float(request.form.get('quantity')) if request.form.get('quantity') else None,
+            unit=request.form.get('unit') or None,
+            part_number=request.form.get('part_number') or None,
+            supplier_url=request.form.get('supplier_url') or None,
+            notes=request.form.get('notes') or None
+        )
+
+        db.session.add(part)
+        db.session.commit()
+
+        flash(f'Part "{part.name}" added successfully', 'success')
+        return redirect(url_for('vehicles.parts', vehicle_id=vehicle.id))
+
+    return render_template('vehicles/part_form.html',
+                           vehicle=vehicle,
+                           part=None,
+                           part_types=PART_TYPES)
+
+
+@bp.route('/<int:vehicle_id>/parts/<int:part_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_part(vehicle_id, part_id):
+    """Edit an existing part"""
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    part = VehiclePart.query.get_or_404(part_id)
+
+    # Check access
+    if vehicle not in current_user.get_all_vehicles():
+        flash('Access denied', 'error')
+        return redirect(url_for('vehicles.index'))
+
+    # Verify part belongs to vehicle
+    if part.vehicle_id != vehicle.id:
+        flash('Part not found', 'error')
+        return redirect(url_for('vehicles.parts', vehicle_id=vehicle.id))
+
+    if request.method == 'POST':
+        part.name = request.form.get('name')
+        part.part_type = request.form.get('part_type')
+        part.specification = request.form.get('specification') or None
+        part.quantity = float(request.form.get('quantity')) if request.form.get('quantity') else None
+        part.unit = request.form.get('unit') or None
+        part.part_number = request.form.get('part_number') or None
+        part.supplier_url = request.form.get('supplier_url') or None
+        part.notes = request.form.get('notes') or None
+
+        db.session.commit()
+
+        flash('Part updated successfully', 'success')
+        return redirect(url_for('vehicles.parts', vehicle_id=vehicle.id))
+
+    return render_template('vehicles/part_form.html',
+                           vehicle=vehicle,
+                           part=part,
+                           part_types=PART_TYPES)
+
+
+@bp.route('/<int:vehicle_id>/parts/<int:part_id>/delete', methods=['POST'])
+@login_required
+def delete_part(vehicle_id, part_id):
+    """Delete a part"""
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    part = VehiclePart.query.get_or_404(part_id)
+
+    # Check access
+    if vehicle not in current_user.get_all_vehicles():
+        flash('Access denied', 'error')
+        return redirect(url_for('vehicles.index'))
+
+    # Verify part belongs to vehicle
+    if part.vehicle_id != vehicle.id:
+        flash('Part not found', 'error')
+        return redirect(url_for('vehicles.parts', vehicle_id=vehicle.id))
+
+    db.session.delete(part)
+    db.session.commit()
+
+    flash('Part deleted successfully', 'success')
+    return redirect(url_for('vehicles.parts', vehicle_id=vehicle.id))

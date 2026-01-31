@@ -937,6 +937,71 @@ class ChargingSession(db.Model):
         }
 
 
+# Part types for vehicle parts catalog
+PART_TYPES = [
+    ('oil', 'Engine Oil'),
+    ('oil_filter', 'Oil Filter'),
+    ('air_filter', 'Air Filter'),
+    ('fuel_filter', 'Fuel Filter'),
+    ('cabin_filter', 'Cabin Filter'),
+    ('spark_plug', 'Spark Plug'),
+    ('brake_pad', 'Brake Pad'),
+    ('brake_fluid', 'Brake Fluid'),
+    ('coolant', 'Coolant'),
+    ('transmission_fluid', 'Transmission Fluid'),
+    ('battery', 'Battery'),
+    ('tire', 'Tire'),
+    ('belt', 'Belt'),
+    ('wiper', 'Wiper Blade'),
+    ('bulb', 'Light Bulb'),
+    ('other', 'Other'),
+]
+
+
+class VehiclePart(db.Model):
+    """Parts and consumables needed for servicing vehicles"""
+    __tablename__ = 'vehicle_parts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    name = db.Column(db.String(100), nullable=False)  # "Engine Oil", "Oil Filter"
+    part_type = db.Column(db.String(50), nullable=False)  # From PART_TYPES
+    specification = db.Column(db.String(200))  # "10W-40", "K&N KN-204"
+
+    quantity = db.Column(db.Float)  # 3.5
+    unit = db.Column(db.String(20))  # "L", "ml", "units"
+
+    part_number = db.Column(db.String(100))  # Manufacturer part number
+    supplier_url = db.Column(db.String(500))  # Link to purchase
+    notes = db.Column(db.Text)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    vehicle = db.relationship('Vehicle', backref=db.backref('parts', lazy='dynamic', cascade='all, delete-orphan'))
+    user = db.relationship('User', backref=db.backref('vehicle_parts', lazy='dynamic'))
+
+    def to_dict(self):
+        """Serialize part to dictionary"""
+        return {
+            'id': self.id,
+            'vehicle_id': self.vehicle_id,
+            'name': self.name,
+            'part_type': self.part_type,
+            'specification': self.specification,
+            'quantity': self.quantity,
+            'unit': self.unit,
+            'part_number': self.part_number,
+            'supplier_url': self.supplier_url,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
 class FuelPriceHistory(db.Model):
     """Historical fuel prices at stations"""
     __tablename__ = 'fuel_price_history'
