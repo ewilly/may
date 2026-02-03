@@ -1,15 +1,18 @@
 from flask import Flask, request, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
+from flask_wtf.csrf import CSRFProtect
 from flask_babel import Babel, gettext as _
 from config import Config
 import os
+import secrets
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.login_message_category = 'info'
 babel = Babel()
+csrf = CSRFProtect()
 
 # Supported languages
 LANGUAGES = {
@@ -55,7 +58,12 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
     babel.init_app(app, locale_selector=get_locale)
+
+    # Exempt API endpoints from CSRF (they use API key auth)
+    from app.routes import api
+    csrf.exempt(api.bp)
 
     from app.models import User, AppSettings
 
@@ -97,12 +105,42 @@ def create_app(config_class=Config):
     def health_check():
         return {'status': 'healthy'}, 200
 
+    # Security headers
+    @app.after_request
+    def add_security_headers(response):
+        # Prevent clickjacking
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        # Prevent MIME type sniffing
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        # Enable XSS filter in browsers
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        # Referrer policy
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        # Permissions policy (formerly feature policy)
+        response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+        return response
+
     with app.app_context():
         db.create_all()
         # Create default admin user if no users exist
         if User.query.count() == 0:
-            admin = User(username='admin', email='admin@example.com', is_admin=True)
-            admin.set_password('admin')
+            admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+            admin_email = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
+            admin_password = os.environ.get('ADMIN_PASSWORD')
+
+            if not admin_password:
+                # Generate a secure random password
+                admin_password = secrets.token_urlsafe(16)
+                print("=" * 60)
+                print("SECURITY NOTICE: Default admin account created")
+                print(f"Username: {admin_username}")
+                print(f"Password: {admin_password}")
+                print("Please change this password immediately after first login!")
+                print("Set ADMIN_PASSWORD environment variable to avoid this message.")
+                print("=" * 60)
+
+            admin = User(username=admin_username, email=admin_email, is_admin=True)
+            admin.set_password(admin_password)
             db.session.add(admin)
             db.session.commit()
 

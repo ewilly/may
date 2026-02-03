@@ -6,6 +6,10 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import User, AppSettings
+from app.security import (
+    get_safe_redirect_url, validate_password_strength,
+    validate_webhook_url, admin_required
+)
 from config import APP_VERSION, GITHUB_REPO
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -26,7 +30,9 @@ def login():
         if user and user.check_password(password):
             login_user(user, remember=remember)
             next_page = request.args.get('next')
-            return redirect(next_page or get_start_page_url(user))
+            # Validate redirect URL to prevent open redirect attacks
+            safe_redirect = get_safe_redirect_url(next_page, default=None)
+            return redirect(safe_redirect or get_start_page_url(user))
 
         flash('Invalid username or password', 'error')
 
@@ -75,6 +81,12 @@ def register():
             flash('Passwords do not match', 'error')
             return render_template('auth/register.html')
 
+        # Validate password strength
+        is_valid, error_msg = validate_password_strength(password)
+        if not is_valid:
+            flash(error_msg, 'error')
+            return render_template('auth/register.html')
+
         if User.query.filter_by(username=username).first():
             flash('Username already exists', 'error')
             return render_template('auth/register.html')
@@ -118,6 +130,12 @@ def settings():
             confirm_password = request.form.get('confirm_new_password')
             if new_password != confirm_password:
                 flash('Passwords do not match', 'error')
+                branding = AppSettings.get_all_branding() if current_user.is_admin else {}
+                return render_template('auth/settings.html', branding=branding)
+            # Validate password strength
+            is_valid, error_msg = validate_password_strength(new_password)
+            if not is_valid:
+                flash(error_msg, 'error')
                 branding = AppSettings.get_all_branding() if current_user.is_admin else {}
                 return render_template('auth/settings.html', branding=branding)
             current_user.set_password(new_password)
@@ -187,10 +205,18 @@ def allowed_file(filename):
 @login_required
 def notifications():
     """Update user notification preferences"""
+    # Validate webhook URL to prevent SSRF
+    webhook_url = request.form.get('webhook_url') or None
+    if webhook_url:
+        is_valid, error_msg = validate_webhook_url(webhook_url)
+        if not is_valid:
+            flash(f'Invalid webhook URL: {error_msg}', 'error')
+            return redirect(url_for('auth.settings') + '#notifications')
+
     current_user.email_reminders = request.form.get('email_reminders') == 'true'
     current_user.reminder_days_before = int(request.form.get('reminder_days_before', 7))
     current_user.notification_method = request.form.get('notification_method', 'email')
-    current_user.webhook_url = request.form.get('webhook_url') or None
+    current_user.webhook_url = webhook_url
     current_user.ntfy_topic = request.form.get('ntfy_topic') or None
     current_user.pushover_user_key = request.form.get('pushover_user_key') or None
     db.session.commit()
@@ -221,11 +247,9 @@ def menu_preferences():
 
 @bp.route('/smtp-settings', methods=['POST'])
 @login_required
+@admin_required
 def smtp_settings():
     """Update notification service settings (admin only)"""
-    if not current_user.is_admin:
-        flash('Access denied', 'error')
-        return redirect(url_for('auth.settings'))
 
     # SMTP settings
     AppSettings.set('smtp_enabled', 'true' if request.form.get('smtp_enabled') else 'false')
@@ -248,10 +272,8 @@ def smtp_settings():
 
 @bp.route('/branding', methods=['POST'])
 @login_required
+@admin_required
 def branding():
-    if not current_user.is_admin:
-        flash('Access denied', 'error')
-        return redirect(url_for('auth.settings'))
 
     # Save branding settings
     AppSettings.set('app_name', request.form.get('app_name', 'May'))
@@ -279,11 +301,9 @@ def branding():
 
 @bp.route('/dvla-settings', methods=['POST'])
 @login_required
+@admin_required
 def dvla_settings():
     """Update DVLA API settings (admin only)"""
-    if not current_user.is_admin:
-        flash('Access denied', 'error')
-        return redirect(url_for('auth.settings'))
 
     api_key = request.form.get('dvla_api_key', '').strip()
     AppSettings.set('dvla_api_key', api_key)
@@ -294,11 +314,9 @@ def dvla_settings():
 
 @bp.route('/registration-settings', methods=['POST'])
 @login_required
+@admin_required
 def registration_settings():
     """Update registration settings (admin only)"""
-    if not current_user.is_admin:
-        flash('Access denied', 'error')
-        return redirect(url_for('auth.settings'))
 
     enabled = 'true' if request.form.get('registration_enabled') else 'false'
     AppSettings.set('registration_enabled', enabled)
@@ -309,22 +327,16 @@ def registration_settings():
 
 @bp.route('/users')
 @login_required
+@admin_required
 def users():
-    if not current_user.is_admin:
-        flash('Access denied', 'error')
-        return redirect(url_for('main.dashboard'))
-
     users = User.query.all()
     return render_template('auth/users.html', users=users)
 
 
 @bp.route('/users/<int:user_id>/toggle-admin', methods=['POST'])
 @login_required
+@admin_required
 def toggle_admin(user_id):
-    if not current_user.is_admin:
-        flash('Access denied', 'error')
-        return redirect(url_for('main.dashboard'))
-
     user = User.query.get_or_404(user_id)
     if user.id != current_user.id:
         user.is_admin = not user.is_admin
@@ -336,11 +348,8 @@ def toggle_admin(user_id):
 
 @bp.route('/users/<int:user_id>/delete', methods=['POST'])
 @login_required
+@admin_required
 def delete_user(user_id):
-    if not current_user.is_admin:
-        flash('Access denied', 'error')
-        return redirect(url_for('main.dashboard'))
-
     user = User.query.get_or_404(user_id)
     if user.id != current_user.id:
         db.session.delete(user)

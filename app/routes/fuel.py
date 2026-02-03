@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import Vehicle, FuelLog, Attachment, FuelStation, FuelPriceHistory
+from app.security import validate_file_upload, secure_filename_with_uuid, validate_positive_number
 
 bp = Blueprint('fuel', __name__, url_prefix='/fuel')
 
@@ -13,6 +14,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
 
 
 def allowed_file(filename):
+    """Legacy function - use validate_file_upload for new code"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
@@ -51,14 +53,35 @@ def new():
         date_str = request.form.get('date')
         date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date()
 
+        # Validate numeric inputs
+        odometer, err = validate_positive_number(request.form.get('odometer'), 'Odometer', max_value=9999999)
+        if err:
+            flash(err, 'error')
+            return render_template('fuel/new.html', vehicles=vehicles)
+
+        volume, err = validate_positive_number(request.form.get('volume'), 'Volume', max_value=10000)
+        if err:
+            flash(err, 'error')
+            return render_template('fuel/new.html', vehicles=vehicles)
+
+        price_per_unit, err = validate_positive_number(request.form.get('price_per_unit'), 'Price per unit', max_value=1000)
+        if err:
+            flash(err, 'error')
+            return render_template('fuel/new.html', vehicles=vehicles)
+
+        total_cost, err = validate_positive_number(request.form.get('total_cost'), 'Total cost', max_value=100000)
+        if err:
+            flash(err, 'error')
+            return render_template('fuel/new.html', vehicles=vehicles)
+
         log = FuelLog(
             vehicle_id=vehicle_id,
             user_id=current_user.id,
             date=date,
-            odometer=float(request.form.get('odometer')),
-            volume=float(request.form.get('volume')) if request.form.get('volume') else None,
-            price_per_unit=float(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else None,
-            total_cost=float(request.form.get('total_cost')) if request.form.get('total_cost') else None,
+            odometer=odometer,
+            volume=volume,
+            price_per_unit=price_per_unit,
+            total_cost=total_cost,
             is_full_tank=request.form.get('is_full_tank') == 'on',
             is_missed=request.form.get('is_missed') == 'on',
             station=request.form.get('station'),

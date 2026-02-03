@@ -8,6 +8,8 @@
     <!-- PWA Meta Tags -->
     <meta name="description" content="Track fuel consumption, expenses, and maintenance for your vehicles">
     <meta name="theme-color" content="{{ PRIMARY_COLOR }}">
+    <!-- CSRF Token for AJAX requests -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="{{ APP_NAME }}">
@@ -306,6 +308,25 @@
                 });
         });
     }
+
+    // CSRF Protection: Automatically inject CSRF tokens into all POST forms
+    document.addEventListener('DOMContentLoaded', function() {
+        const csrfToken = '{{ csrf_token() }}';
+        document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function(form) {
+            // Skip if token already exists
+            if (form.querySelector('input[name="csrf_token"]')) return;
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'csrf_token';
+            input.value = csrfToken;
+            form.insertBefore(input, form.firstChild);
+        });
+
+        // Also handle HTMX requests
+        document.body.addEventListener('htmx:configRequest', function(event) {
+            event.detail.headers['X-CSRFToken'] = csrfToken;
+        });
+    });
     </script>
 </body>
 </html>
