@@ -118,7 +118,7 @@ def view(vehicle_id):
         'total_fuel_cost': vehicle.get_total_fuel_cost(),
         'total_expense_cost': vehicle.get_total_expense_cost(),
         'total_cost': vehicle.get_total_cost(),
-        'total_distance': vehicle.get_total_distance(),
+        'total_distance': vehicle.get_total_distance(current_user.distance_unit),
         'avg_consumption': vehicle.get_average_consumption(),
         'fuel_logs_count': vehicle.fuel_logs.count(),
         'expenses_count': vehicle.expenses.count()
@@ -355,7 +355,7 @@ def report(vehicle_id):
         'total_fuel_cost': vehicle.get_total_fuel_cost(),
         'total_expense_cost': vehicle.get_total_expense_cost(),
         'total_cost': vehicle.get_total_cost(),
-        'total_distance': vehicle.get_total_distance(),
+        'total_distance': vehicle.get_total_distance(current_user.distance_unit),
         'avg_consumption': vehicle.get_average_consumption(),
         'fuel_logs_count': len(fuel_logs),
         'expenses_count': len(expenses)

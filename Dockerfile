@@ -27,9 +27,15 @@ RUN useradd --create-home --shell /bin/bash may \
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+# Build args for version info
+ARG GIT_SHA=""
+ARG BUILD_DATE=""
+
 # Set environment variables
 ENV FLASK_APP=run.py
 ENV PYTHONUNBUFFERED=1
+ENV GIT_SHA=${GIT_SHA}
+ENV BUILD_DATE=${BUILD_DATE}
 
 # Expose port
 EXPOSE 5050

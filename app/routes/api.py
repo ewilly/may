@@ -257,7 +257,7 @@ def vehicle_stats(vehicle_id):
         'expenses_by_category': category_totals,
         'total_fuel_cost': vehicle.get_total_fuel_cost(),
         'total_expense_cost': vehicle.get_total_expense_cost(),
-        'total_distance': vehicle.get_total_distance(),
+        'total_distance': vehicle.get_total_distance(current_user.distance_unit),
         'avg_consumption': vehicle.get_average_consumption()
     })
 

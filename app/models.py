@@ -165,7 +165,23 @@ class Vehicle(db.Model):
     def get_total_cost(self):
         return self.get_total_fuel_cost() + self.get_total_expense_cost()
 
-    def get_total_distance(self):
+    def get_total_distance(self, distance_unit=None):
+        """Get total distance for the vehicle.
+
+        If Tessie is enabled, returns the current odometer reading.
+        Otherwise, calculates from fuel log entries.
+
+        Args:
+            distance_unit: If provided ('km' or 'mi'), converts to this unit.
+        """
+        # If Tessie is enabled, use the odometer reading directly
+        if self.uses_tessie_odometer() and self.tessie_last_odometer:
+            odometer = self.tessie_last_odometer  # Stored in km
+            if distance_unit == 'mi':
+                return odometer * 0.621371
+            return odometer
+
+        # Otherwise calculate from fuel logs
         logs = self.fuel_logs.order_by(FuelLog.odometer).all()
         if len(logs) < 2:
             return 0

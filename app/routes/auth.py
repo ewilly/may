@@ -10,7 +10,7 @@ from app.security import (
     get_safe_redirect_url, validate_password_strength,
     validate_webhook_url, admin_required
 )
-from config import APP_VERSION, RELEASE_CHANNEL, GITHUB_REPO
+from config import APP_VERSION, DISPLAY_VERSION, RELEASE_CHANNEL, GITHUB_REPO
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -197,7 +197,7 @@ def settings():
                            pushover_configured=pushover_configured,
                            dvla_settings=dvla_settings,
                            tessie_settings=tessie_settings,
-                           app_version=APP_VERSION,
+                           app_version=DISPLAY_VERSION,
                            release_channel=RELEASE_CHANNEL,
                            github_repo=GITHUB_REPO,
                            registration_enabled=registration_enabled)

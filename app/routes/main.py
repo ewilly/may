@@ -75,7 +75,7 @@ def dashboard():
 
         # Total distance
         for vehicle in vehicles:
-            total_distance += vehicle.get_total_distance()
+            total_distance += vehicle.get_total_distance(current_user.distance_unit)
 
         # Recent activity
         recent_logs = FuelLog.query.filter(
