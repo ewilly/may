@@ -1,0 +1,168 @@
+# Italian Translations for May Vehicle Management
+# Copyright (C) 2024
+# This file is distributed under the same license as the May project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: May 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2025-02-06 15:49+0100\n"
+"Last-Translator: Albano Battistella <albanobattistella@gmail.com>\n"
+"Language-Team: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Manual\n"
+
+#: Navigation
+msgid "Dashboard"
+msgstr "Cruscotto"
+
+msgid "Vehicles"
+msgstr "Veicoli"
+
+msgid "Fuel Logs"
+msgstr "Registri Carburante"
+
+msgid "Expenses"
+msgstr "Spese"
+
+msgid "Users"
+msgstr "Utenti"
+
+msgid "Settings"
+msgstr "Impostazioni"
+
+msgid "Logout"
+msgstr "Disconnetti"
+
+#: Common actions
+msgid "Save"
+msgstr "Salva"
+
+msgid "Cancel"
+msgstr "Annulla"
+
+msgid "Delete"
+msgstr "Elimina"
+
+msgid "Edit"
+msgstr "Modifica"
+
+msgid "Add"
+msgstr "Aggiungi"
+
+msgid "Back"
+msgstr "Indietro"
+
+#: Vehicles
+msgid "Add Vehicle"
+msgstr "Aggiungi Veicolo"
+
+msgid "Edit Vehicle"
+msgstr "Modifica Veicolo"
+
+msgid "No vehicles"
+msgstr "Nessun veicolo"
+
+msgid "Vehicle Type"
+msgstr "Tipo di Veicolo"
+
+msgid "Make"
+msgstr "Marca"
+
+msgid "Model"
+msgstr "Modello"
+
+msgid "Year"
+msgstr "Anno"
+
+msgid "Registration"
+msgstr "Targa"
+
+msgid "Fuel Type"
+msgstr "Tipo di Carburante"
+
+#: Fuel Logs
+msgid "Add Fuel Log"
+msgstr "Aggiungi Registro Carburante"
+
+msgid "Odometer"
+msgstr "Contachilometri"
+
+msgid "Volume"
+msgstr "Volume"
+
+msgid "Price per unit"
+msgstr "Prezzo per unità"
+
+msgid "Total Cost"
+msgstr "Costo Totale"
+
+msgid "Full Tank"
+msgstr "Serbatoio Pieno"
+
+msgid "Station"
+msgstr "Stazione di Servizio"
+
+#: Expenses
+msgid "Add Expense"
+msgstr "Aggiungi Spesa"
+
+msgid "Category"
+msgstr "Categoria"
+
+msgid "Description"
+msgstr "Descrizione"
+
+msgid "Cost"
+msgstr "Costo"
+
+msgid "Vendor"
+msgstr "Fornitore"
+
+#: Settings
+msgid "Units & Values"
+msgstr "Unità di Misura e Valori"
+
+msgid "Account & Security"
+msgstr "Account e Sicurezza"
+
+msgid "Integrations"
+msgstr "Integrazioni"
+
+msgid "Language"
+msgstr "Lingua"
+
+msgid "Distance"
+msgstr "Distanza"
+
+msgid "Currency"
+msgstr "Valuta"
+
+msgid "Save Changes"
+msgstr "Salva Modifiche"
+
+#: Stats
+msgid "Total Fuel Cost"
+msgstr "Costo Totale Carburante"
+
+msgid "Total Distance"
+msgstr "Distanza Totale"
+
+msgid "Average Consumption"
+msgstr "Consumo Medio"
+
+#: Messages
+msgid "Settings updated successfully"
+msgstr "Impostazioni aggiornate correttamente"
+
+msgid "Vehicle added successfully"
+msgstr "Veicolo aggiunto correttamente"
+
+msgid "Vehicle updated successfully"
+msgstr "Veicolo aggiornato correttamente"
+
+msgid "Access denied"
+msgstr "Accesso negato"
