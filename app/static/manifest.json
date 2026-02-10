@@ -57,31 +57,5 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["utilities", "lifestyle"],
-  "shortcuts": [
-    {
-      "name": "Add Fuel Log",
-      "short_name": "Fuel",
-      "description": "Log a new fuel fill-up",
-      "url": "/fuel/new",
-      "icons": [
-        {
-          "src": "/static/icons/fuel-shortcut.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Add Expense",
-      "short_name": "Expense",
-      "description": "Record a new expense",
-      "url": "/expenses/new",
-      "icons": [
-        {
-          "src": "/static/icons/expense-shortcut.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ]
+  "categories": ["utilities", "lifestyle"]
 }

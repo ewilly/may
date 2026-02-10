@@ -36,7 +36,7 @@
     <meta name="theme-color" content="{{ PRIMARY_COLOR }}">
     <!-- CSRF Token for AJAX requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="{{ APP_NAME }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
@@ -118,11 +118,36 @@
         };
     </script>
     <script src="{{ TAILWIND_ASSET_URL }}" onerror="window.__loadTailwindFallback()"></script>
-    <!-- HTMX - Non-critical, deferred -->
-    <script src="{{ HTMX_CDN_URL }}" defer></script>
+    <!-- HTMX - Non-critical, deferred, local with CDN fallback -->
+    <script>
+        window.__loadHtmxFallback = function() {
+            if (window.__htmxFallbackLoaded) {
+                return;
+            }
+            window.__htmxFallbackLoaded = true;
+            var fallbackScript = document.createElement('script');
+            fallbackScript.src = '{{ HTMX_CDN_URL }}';
+            fallbackScript.defer = true;
+            document.head.appendChild(fallbackScript);
+        };
+    </script>
+    <script src="{{ HTMX_ASSET_URL }}" defer onerror="window.__loadHtmxFallback()"></script>
     <!-- Chart.js - Only loaded on pages that need it via block -->
     {% block extra_scripts %}{% endblock %}
     <style>
+        /* Critical dark mode styles - renders before Tailwind JS compiles */
+        html.dark { color-scheme: dark; }
+        html.dark body { background-color: #111827; color: #f9fafb; }
+        html:not(.dark) body { background-color: #f9fafb; }
+        html.dark nav { background-color: #1f2937; border-color: #374151; }
+        html.dark .dark\:bg-gray-800 { background-color: #1f2937; }
+        html.dark .dark\:bg-gray-700 { background-color: #374151; }
+        html.dark .dark\:text-white { color: #fff; }
+        html.dark .dark\:text-gray-300 { color: #d1d5db; }
+        html.dark .dark\:text-gray-400 { color: #9ca3af; }
+        html.dark .dark\:border-gray-700 { border-color: #374151; }
+        html.dark .dark\:border-gray-600 { border-color: #4b5563; }
+
         [x-cloak] { display: none !important; }
         .text-primary-400 { color: var(--primary-400); }
         .text-primary-500 { color: var(--primary-500); }
@@ -151,7 +176,7 @@
         .dark .dark\:border-primary-800 { border-color: var(--primary-800); }
     </style>
 </head>
-<body class="h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+<body class="h-full bg-gray-50 dark:bg-gray-900">
     {% if current_user.is_authenticated %}
     <div class="min-h-full">
         <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">

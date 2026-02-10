@@ -4,12 +4,13 @@ from pathlib import Path
 basedir = Path(__file__).parent.absolute()
 
 
-APP_VERSION = '0.9.0'
+APP_VERSION = '0.9.1'
 RELEASE_CHANNEL = os.environ.get('RELEASE_CHANNEL', 'stable')
 GIT_SHA = os.environ.get('GIT_SHA', '')[:7]  # Short SHA
 GITHUB_REPO = 'dannymcc/may'
 TAILWIND_ASSET_URL = os.environ.get('TAILWIND_ASSET_URL', '/static/vendor/tailwindcss.js')
 TAILWIND_CDN_URL = os.environ.get('TAILWIND_CDN_URL', 'https://cdn.tailwindcss.com')
+HTMX_ASSET_URL = os.environ.get('HTMX_ASSET_URL', '/static/vendor/htmx.min.js')
 HTMX_CDN_URL = os.environ.get('HTMX_CDN_URL', 'https://unpkg.com/htmx.org@1.9.10')
 
 # Build display version (e.g., "0.5.0" for stable, "0.5.0-dev+abc1234" for dev)
@@ -29,6 +30,7 @@ class Config:
     GITHUB_REPO = GITHUB_REPO
     TAILWIND_ASSET_URL = TAILWIND_ASSET_URL
     TAILWIND_CDN_URL = TAILWIND_CDN_URL
+    HTMX_ASSET_URL = HTMX_ASSET_URL
     HTMX_CDN_URL = HTMX_CDN_URL
     SECRET_KEY = os.environ.get('SECRET_KEY')
     if not SECRET_KEY:
