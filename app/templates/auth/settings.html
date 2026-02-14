@@ -280,6 +280,8 @@
                                 function toggleRegistration(enabled) {
                                     const formData = new FormData();
                                     if (enabled) formData.append('registration_enabled', 'on');
+                                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                                    if (csrfToken) formData.append('csrf_token', csrfToken);
                                     fetch('{{ url_for("auth.registration_settings") }}', {
                                         method: 'POST',
                                         body: formData
