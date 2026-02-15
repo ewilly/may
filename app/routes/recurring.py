@@ -12,11 +12,12 @@ bp = Blueprint('recurring', __name__, url_prefix='/recurring')
 @login_required
 def index():
     """List all recurring expenses."""
-    recurring = RecurringExpense.query.join(Vehicle).filter(
-        Vehicle.owner_id == current_user.id
-    ).order_by(RecurringExpense.next_due.asc()).all()
+    vehicles = current_user.get_all_vehicles()
+    vehicle_ids = [v.id for v in vehicles]
 
-    vehicles = Vehicle.query.filter_by(owner_id=current_user.id).all()
+    recurring = RecurringExpense.query.filter(
+        RecurringExpense.vehicle_id.in_(vehicle_ids)
+    ).order_by(RecurringExpense.next_due.asc()).all()
 
     return render_template('recurring/index.html',
                          recurring=recurring,
@@ -28,7 +29,7 @@ def index():
 @login_required
 def new():
     """Create a new recurring expense."""
-    vehicles = Vehicle.query.filter_by(owner_id=current_user.id).all()
+    vehicles = current_user.get_all_vehicles()
 
     if not vehicles:
         flash('Please add a vehicle first.', 'warning')
@@ -37,9 +38,9 @@ def new():
     if request.method == 'POST':
         vehicle_id = request.form.get('vehicle_id', type=int)
 
-        # Verify vehicle belongs to user
-        vehicle = Vehicle.query.filter_by(id=vehicle_id, owner_id=current_user.id).first()
-        if not vehicle:
+        # Verify user has access to vehicle
+        vehicle = Vehicle.query.get(vehicle_id)
+        if not vehicle or vehicle not in vehicles:
             flash('Invalid vehicle.', 'error')
             return redirect(url_for('recurring.new'))
 
@@ -80,9 +81,11 @@ def new():
 @login_required
 def edit(recurring_id):
     """Edit a recurring expense."""
-    recurring = RecurringExpense.query.join(Vehicle).filter(
+    vehicles = current_user.get_all_vehicles()
+    vehicle_ids = [v.id for v in vehicles]
+    recurring = RecurringExpense.query.filter(
         RecurringExpense.id == recurring_id,
-        Vehicle.owner_id == current_user.id
+        RecurringExpense.vehicle_id.in_(vehicle_ids)
     ).first_or_404()
 
     if request.method == 'POST':
@@ -120,9 +123,11 @@ def edit(recurring_id):
 @login_required
 def delete(recurring_id):
     """Delete a recurring expense."""
-    recurring = RecurringExpense.query.join(Vehicle).filter(
+    vehicles = current_user.get_all_vehicles()
+    vehicle_ids = [v.id for v in vehicles]
+    recurring = RecurringExpense.query.filter(
         RecurringExpense.id == recurring_id,
-        Vehicle.owner_id == current_user.id
+        RecurringExpense.vehicle_id.in_(vehicle_ids)
     ).first_or_404()
 
     db.session.delete(recurring)
@@ -136,9 +141,11 @@ def delete(recurring_id):
 @login_required
 def generate(recurring_id):
     """Manually generate an expense entry from a recurring expense."""
-    recurring = RecurringExpense.query.join(Vehicle).filter(
+    vehicles = current_user.get_all_vehicles()
+    vehicle_ids = [v.id for v in vehicles]
+    recurring = RecurringExpense.query.filter(
         RecurringExpense.id == recurring_id,
-        Vehicle.owner_id == current_user.id
+        RecurringExpense.vehicle_id.in_(vehicle_ids)
     ).first_or_404()
 
     # Create expense entry using the recurring expense's due date
@@ -174,9 +181,11 @@ def generate(recurring_id):
 @login_required
 def toggle_active(recurring_id):
     """Toggle active status of a recurring expense."""
-    recurring = RecurringExpense.query.join(Vehicle).filter(
+    vehicles = current_user.get_all_vehicles()
+    vehicle_ids = [v.id for v in vehicles]
+    recurring = RecurringExpense.query.filter(
         RecurringExpense.id == recurring_id,
-        Vehicle.owner_id == current_user.id
+        RecurringExpense.vehicle_id.in_(vehicle_ids)
     ).first_or_404()
 
     recurring.is_active = not recurring.is_active
