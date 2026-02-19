@@ -101,7 +101,7 @@ def new():
         station_id = request.form.get('station_id', type=int)
         if station_id and log.price_per_unit:
             station = FuelStation.query.get(station_id)
-            if station and station.user_id == current_user.id:
+            if station:
                 # Save price history
                 price_history = FuelPriceHistory(
                     station_id=station_id,

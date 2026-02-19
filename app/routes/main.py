@@ -109,8 +109,6 @@ def dashboard():
         subquery = db.session.query(
             FuelPriceHistory.station_id,
             func.max(FuelPriceHistory.date).label('max_date')
-        ).filter(
-            FuelPriceHistory.user_id == current_user.id
         ).group_by(FuelPriceHistory.station_id).subquery()
 
         cheapest_stations = db.session.query(FuelPriceHistory).join(
