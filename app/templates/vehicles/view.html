@@ -61,7 +61,7 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Odometer</dt>
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ "%.0f"|format(vehicle.get_last_odometer(current_user.distance_unit)) }} {{ current_user.distance_unit }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ "%.0f"|format(vehicle.get_last_odometer(vehicle.get_effective_odometer_unit())) }} {{ vehicle.get_effective_odometer_unit() }}</dd>
                 </div>
             </div>
         </div>
@@ -83,7 +83,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Distance</dt>
         <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.0f"|format(stats.total_distance) }}</dd>
-        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.distance_unit }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ vehicle.get_effective_odometer_unit() }}</dd>
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg. Consumption</dt>
@@ -284,7 +284,7 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Odometer') }}</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                     {% if vehicle.tessie_last_odometer %}
-                    {% if current_user.distance_unit == 'mi' %}
+                    {% if vehicle.get_effective_odometer_unit() == 'mi' %}
                     {{ "%.0f"|format(vehicle.tessie_last_odometer * 0.621371) }} mi
                     {% else %}
                     {{ "%.0f"|format(vehicle.tessie_last_odometer) }} km
@@ -314,7 +314,7 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Est. Range') }}</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                     {% if vehicle.tessie_battery_range %}
-                    {% if current_user.distance_unit == 'mi' %}
+                    {% if vehicle.get_effective_odometer_unit() == 'mi' %}
                     {{ "%.0f"|format(vehicle.tessie_battery_range * 0.621371) }} mi
                     {% else %}
                     {{ "%.0f"|format(vehicle.tessie_battery_range) }} km
@@ -556,7 +556,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-900 dark:text-white">{{ log.date|format_date }}</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            {{ "%.0f"|format(log.odometer) }} {{ current_user.distance_unit }} &middot;
+                            {{ "%.0f"|format(log.odometer) }} {{ vehicle.get_effective_odometer_unit() }} &middot;
                             {{ "%.1f"|format(log.volume or 0) }} {{ current_user.volume_unit }}
                             {% if log.is_full_tank %}<span class="text-green-600">(Full)</span>{% endif %}
                         </p>

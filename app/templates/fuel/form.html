@@ -20,14 +20,15 @@
                         {% for vehicle in vehicles %}
                         <option value="{{ vehicle.id }}"
                                 {% if (log and log.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}
-                                data-last-odometer="{{ vehicle.get_last_odometer(current_user.distance_unit) }}"
+                                data-last-odometer="{{ vehicle.get_last_odometer(vehicle.get_effective_odometer_unit()) }}"
+                                data-odometer-unit="{{ vehicle.get_effective_odometer_unit() }}"
                                 data-uses-tessie="{{ 'true' if vehicle.uses_tessie_odometer() else 'false' }}"
-                                data-tessie-odometer="{% if vehicle.tessie_last_odometer %}{% if current_user.distance_unit == 'mi' %}{{ (vehicle.tessie_last_odometer * 0.621371)|round|int }}{% else %}{{ vehicle.tessie_last_odometer|round|int }}{% endif %}{% endif %}">
+                                data-tessie-odometer="{% if vehicle.tessie_last_odometer %}{% if vehicle.get_effective_odometer_unit() == 'mi' %}{{ (vehicle.tessie_last_odometer * 0.621371)|round|int }}{% else %}{{ vehicle.tessie_last_odometer|round|int }}{% endif %}{% endif %}">
                             {{ vehicle.name }}
                         </option>
                         {% endfor %}
                     </select>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Last odometer: <span id="last-odometer">-</span> {{ current_user.distance_unit }}</p>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Last odometer: <span id="last-odometer">-</span> <span id="odometer-unit-display">{{ current_user.distance_unit }}</span></p>
                 </div>
 
                 <div>
@@ -39,7 +40,7 @@
 
                 <div>
                     <label for="odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Odometer ({{ current_user.distance_unit }}) *
+                        Odometer (<span id="odometer-unit-label">{{ current_user.distance_unit }}</span>) *
                         <span id="tessie-odometer-badge" class="hidden ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                             <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -164,9 +165,14 @@ function updateVehicleOdometer(vehicleId) {
     const usesTessie = selectedOption.getAttribute('data-uses-tessie') === 'true';
     const tessieOdometer = selectedOption.getAttribute('data-tessie-odometer');
     const lastOdometer = selectedOption.getAttribute('data-last-odometer');
+    const odometerUnit = selectedOption.getAttribute('data-odometer-unit') || '{{ current_user.distance_unit }}';
 
-    // Update last odometer display
+    // Update last odometer display and unit labels
     document.getElementById('last-odometer').textContent = lastOdometer || 0;
+    const unitDisplay = document.getElementById('odometer-unit-display');
+    const unitLabel = document.getElementById('odometer-unit-label');
+    if (unitDisplay) unitDisplay.textContent = odometerUnit;
+    if (unitLabel) unitLabel.textContent = odometerUnit;
 
     if (usesTessie && tessieOdometer) {
         // Show Tessie badge and make field read-only

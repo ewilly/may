@@ -73,7 +73,7 @@ def dashboard():
         ).scalar()
         total_expense_cost = expense_result or 0
 
-        # Total distance
+        # Total distance (uses user's distance_unit for Tessie conversion; raw logs are in their stored unit)
         for vehicle in vehicles:
             total_distance += vehicle.get_total_distance(current_user.distance_unit)
 
