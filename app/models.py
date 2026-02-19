@@ -174,6 +174,9 @@ class Vehicle(db.Model):
     # Tracking unit (mileage or hours)
     tracking_unit = db.Column(db.String(20), default='mileage')  # mileage, hours
 
+    # Per-vehicle odometer unit override (if None, falls back to user's distance_unit)
+    odometer_unit = db.Column(db.String(10), default=None)  # km, mi, or None (use user preference)
+
     # Fuel info
     fuel_type = db.Column(db.String(20), default='petrol')  # petrol, diesel, electric, hybrid, lpg
     tank_capacity = db.Column(db.Float)  # in liters
@@ -218,6 +221,18 @@ class Vehicle(db.Model):
                             cascade='all, delete-orphan')
     charging_sessions = db.relationship('ChargingSession', backref='vehicle', lazy='dynamic',
                                         cascade='all, delete-orphan')
+
+    def get_effective_odometer_unit(self):
+        """Return the odometer unit for this vehicle.
+
+        Uses the vehicle's own odometer_unit if set, otherwise falls back to
+        the owner's distance_unit preference.
+        """
+        if self.odometer_unit:
+            return self.odometer_unit
+        if self.owner:
+            return self.owner.distance_unit
+        return 'km'
 
     def get_total_fuel_cost(self):
         return sum(log.total_cost for log in self.fuel_logs.all() if log.total_cost)
@@ -642,6 +657,12 @@ VEHICLE_TYPES = [
 TRACKING_UNITS = [
     ('mileage', 'Mileage (km/mi)'),
     ('hours', 'Hours'),
+]
+
+# Odometer unit options (for per-vehicle override)
+ODOMETER_UNITS = [
+    ('km', 'Kilometres (km)'),
+    ('mi', 'Miles (mi)'),
 ]
 
 # Fuel types
