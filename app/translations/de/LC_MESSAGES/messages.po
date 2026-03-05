@@ -19,70 +19,63 @@ msgstr ""
 
 #: app/models.py:624
 msgid "Front Tire Size"
-msgstr ""
+msgstr "Reifengröße vorn"
 
 #: app/models.py:625
-#, fuzzy
 msgid "Rear Tire Size"
-msgstr "Benutzer erstellen"
+msgstr "Reifengröße hinten"
 
 #: app/models.py:626
 msgid "Wheel Size"
-msgstr ""
+msgstr "Reifengröße"
 
 #: app/models.py:627
-#, fuzzy
 msgid "Engine Oil Type"
-msgstr "Ungültiger Dateityp"
+msgstr "Motoröltyp"
 
 #: app/models.py:628
 msgid "Oil Capacity"
-msgstr ""
+msgstr "Max. Ölmenge"
 
 #: app/models.py:629
-#, fuzzy
 msgid "Coolant Type"
-msgstr "Ladetyp"
+msgstr "Kühltyp"
 
 #: app/models.py:630
 msgid "Front Wiper Size"
-msgstr ""
+msgstr "Wischblättergröße vorn"
 
 #: app/models.py:631
 msgid "Rear Wiper Size"
-msgstr ""
+msgstr "Wischblattgröße hinten"
 
 #: app/models.py:632
-#, fuzzy
 msgid "Battery Type"
-msgstr "Batteriestand"
+msgstr "Batterietyp"
 
 #: app/models.py:633
-#, fuzzy
 msgid "Spark Plug Type"
-msgstr "Ladetyp"
+msgstr "Zündkerzentyp"
 
 #: app/models.py:634
-#, fuzzy
 msgid "Air Filter Part #"
-msgstr "Tankstelle hinzufügen"
+msgstr "Luftfiltertyp #"
 
 #: app/models.py:635
-#, fuzzy
 msgid "Cabin Filter Part #"
-msgstr "Tankstelle hinzufügen"
+msgstr "Innenraumfiltertyp"
 
 #: app/models.py:636
 msgid "Front Brake Pads"
-msgstr ""
+msgstr "Vordere Bremsbeläge"
 
 #: app/models.py:637
 msgid "Rear Brake Pads"
-msgstr ""
+msgstr "Hintere Bremsbeläge"
 
 #: app/models.py:638 app/models.py:1127
 msgid "Transmission Fluid"
-msgstr ""
+msgstr "Getriebeöl"
 
 #: app/models.py:639 app/models.py:706 app/models.py:757
 #: app/templates/auth/settings.html:176
@@ -96,141 +89,125 @@ msgid "Maintenance"
 msgstr "Wartung"
 
 #: app/models.py:645
-#, fuzzy
 msgid "Repairs"
-msgstr "Teile"
+msgstr "Reparaturen"
 
 #: app/models.py:646
-#, fuzzy
 msgid "Insurance"
-msgstr "Entfernung"
+msgstr "Versicherung"
 
 #: app/models.py:647 app/models.py:701
 msgid "Road Tax"
-msgstr ""
+msgstr "KfZ-Steuer"
 
 #: app/models.py:648 app/templates/vehicles/view.html:59
-#, fuzzy
 msgid "Registration"
-msgstr "Registrierung erlauben"
+msgstr "Registrierung"
 
 #: app/models.py:649
-#, fuzzy
 msgid "Parking"
-msgstr "Laden"
+msgstr "Parken"
 
 #: app/models.py:650
-#, fuzzy
 msgid "Tolls"
-msgstr "Gesamt"
+msgstr "Maut"
 
 #: app/models.py:651
-#, fuzzy
 msgid "Cleaning"
-msgstr "Laden"
+msgstr "Reinigung"
 
 #: app/models.py:652
-#, fuzzy
 msgid "Accessories"
-msgstr "Zugriff verweigert"
+msgstr "Zubehör"
 
 #: app/models.py:653 app/models.py:667 app/models.py:693 app/models.py:725
 #: app/models.py:735 app/models.py:769 app/models.py:1133
-#, fuzzy
 msgid "Other"
-msgstr "Kilometerstand"
+msgstr "andere"
 
 #: app/models.py:658
-#, fuzzy
 msgid "Car"
-msgstr "Zurücksetzen"
+msgstr "Auto"
 
 #: app/models.py:659
-#, fuzzy
 msgid "Van"
-msgstr "FIN"
+msgstr "Van"
 
 #: app/models.py:660
-#, fuzzy
 msgid "Motorbike"
-msgstr "Mehr"
+msgstr "Motorrad"
 
 #: app/models.py:661
-#, fuzzy
 msgid "Scooter"
-msgstr "Kilometerstand"
+msgstr "Scooter"
 
 #: app/models.py:662
 msgid "Truck"
-msgstr ""
+msgstr "Lastkraftwagen"
 
 #: app/models.py:663
 msgid "SUV"
-msgstr ""
+msgstr "SUV"
 
 #: app/models.py:664
-#, fuzzy
 msgid "Tractor"
-msgstr "Administrator"
+msgstr "Traktor"
 
 #: app/models.py:665
 msgid "ATV/UTV"
-msgstr ""
+msgstr "ATV/UTV"
 
 #: app/models.py:666
-#, fuzzy
 msgid "Boat"
-msgstr "Über"
+msgstr "Boot/Schiff"
 
 #: app/models.py:672
 msgid "Mileage (km/mi)"
-msgstr ""
+msgstr "Verbrauch (km/mi)"
 
 #: app/models.py:673
-#, fuzzy
 msgid "Hours"
-msgstr "Benutzer"
+msgstr "Stunden"
 
 #: app/models.py:678
 msgid "Kilometres (km)"
-msgstr ""
+msgstr "Kilometer (km)"
 
 #: app/models.py:679
-#, fuzzy
 msgid "Miles (mi)"
-msgstr "E-Mail (SMTP)"
+msgstr "Milen (mi)"
 
 #: app/models.py:684
 msgid "Petrol/Gasoline"
-msgstr ""
+msgstr "Benzin"
 
 #: app/models.py:685
 msgid "Diesel"
-msgstr ""
+msgstr "Diesel"
 
 #: app/models.py:686
 msgid "Electric"
-msgstr ""
+msgstr "Elektrisch"
 
 #: app/models.py:687
 msgid "Hybrid"
-msgstr ""
+msgstr "Hybrid"
 
 #: app/models.py:688
 msgid "Plug-in Hybrid"
-msgstr ""
+msgstr "Plug-in Hybrid"
 
 #: app/models.py:689
 msgid "LPG"
-msgstr ""
+msgstr "LPG"
 
 #: app/models.py:690
 msgid "CNG"
-msgstr ""
+msgstr "Erdgas"
 
 #: app/models.py:691
 msgid "Hydrogen"
-msgstr ""
+msgstr "Wasserstoff"
 
 #: app/models.py:692
 msgid "E85/Flex Fuel"
@@ -238,7 +215,7 @@ msgstr ""
 
 #: app/models.py:698
 msgid "MOT/Inspection"
-msgstr ""
+msgstr "Inspektion"
 
 #: app/models.py:699
 #, fuzzy
@@ -247,242 +224,216 @@ msgstr "Service-Verlauf"
 
 #: app/models.py:700
 msgid "Insurance Renewal"
-msgstr ""
+msgstr "Versicherung verlängern"
 
 #: app/models.py:702
-#, fuzzy
 msgid "Registration Renewal"
-msgstr "Registrierung erlauben"
+msgstr "Registrierung erneuern"
 
 #: app/models.py:703
-#, fuzzy
 msgid "Warranty Expiry"
-msgstr "MOT-Ablauf"
+msgstr "Garantieablauf"
 
 #: app/models.py:704
-#, fuzzy
 msgid "Tire Change"
-msgstr "Änderungen speichern"
+msgstr "Reifenwechsel"
 
 #: app/models.py:705 app/models.py:740
-#, fuzzy
 msgid "Oil Change"
-msgstr "z.B. Ölwechsel"
+msgstr "Ölwechsel"
 
 #: app/models.py:711
 msgid "No Repeat"
-msgstr ""
+msgstr "kene Wiederholung"
 
 #: app/models.py:712 app/templates/recurring/form.html:57
 msgid "Monthly"
 msgstr "Monatlich"
 
 #: app/models.py:713
-#, fuzzy
 msgid "Quarterly (3 months)"
 msgstr "Vierteljährlich (alle 3 Monate)"
 
 #: app/models.py:714
-#, fuzzy
 msgid "Every 6 months"
-msgstr "Alle (Monate)"
+msgstr "Alle 6 Monate"
 
 #: app/models.py:715 app/templates/recurring/form.html:60
 msgid "Yearly"
 msgstr "Jährlich"
 
 #: app/models.py:720
-#, fuzzy
 msgid "Business"
-msgstr "SSL verwenden"
+msgstr "Geschäftlich"
 
 #: app/models.py:721
-#, fuzzy
 msgid "Personal"
-msgstr "Version"
+msgstr "Privat"
 
 #: app/models.py:722
 #, fuzzy
 msgid "Commute"
-msgstr "Erledigen"
+msgstr "Pendeln"
 
 #: app/models.py:723
 msgid "Medical"
-msgstr ""
+msgstr "medizinisch"
 
 #: app/models.py:724
-#, fuzzy
 msgid "Charity"
-msgstr "Stadt"
+msgstr "Wohltätigkeit"
 
 #: app/models.py:730
-#, fuzzy
 msgid "Home Charging"
-msgstr "Elektro-Laden"
+msgstr "Elektroladung zu Hause"
 
 #: app/models.py:731
 msgid "Level 1"
-msgstr ""
+msgstr "Level 1"
 
 #: app/models.py:732
 msgid "Level 2"
-msgstr ""
+msgstr "Level 2"
 
 #: app/models.py:733
-#, fuzzy
 msgid "DC Fast Charge"
-msgstr "Ersten Ladevorgang erfassen"
+msgstr "Schnelladung"
 
 #: app/models.py:734
 msgid "Tesla Supercharger"
-msgstr ""
+msgstr "esla Supercharger"
 
 #: app/models.py:741 app/models.py:1119
-#, fuzzy
 msgid "Oil Filter"
-msgstr "Filtern"
+msgstr "Ölfilter"
 
 #: app/models.py:742 app/models.py:1120
-#, fuzzy
 msgid "Air Filter"
-msgstr "Filtern"
+msgstr "Luftfilter"
 
 #: app/models.py:743
 msgid "Cabin/Pollen Filter"
-msgstr ""
+msgstr "Pollenfilter"
 
 #: app/models.py:744 app/models.py:1121
-#, fuzzy
 msgid "Fuel Filter"
-msgstr "Filtern"
+msgstr "Kraftstofffilter"
 
 #: app/models.py:745
 msgid "Spark Plugs"
-msgstr ""
+msgstr "Zündkerzen"
 
 #: app/models.py:746
-#, fuzzy
 msgid "Brake Pads"
-msgstr "Zurück zu Fahrten"
+msgstr "Bremsklötze"
 
 #: app/models.py:747 app/models.py:1125
 msgid "Brake Fluid"
-msgstr ""
+msgstr "Bremsflüssigkeit"
 
 #: app/models.py:748
 msgid "Coolant Flush"
-msgstr ""
+msgstr "Kühlflüssigkeit"
 
 #: app/models.py:749
-#, fuzzy
 msgid "Transmission Service"
-msgstr "Benachrichtigungsdienste"
+msgstr "Überführungskosten"
 
 #: app/models.py:750
 msgid "Timing Belt"
-msgstr ""
+msgstr "Zahnriemen"
 
 #: app/models.py:751
 msgid "Serpentine Belt"
-msgstr ""
+msgstr "Keilriemen"
 
 #: app/models.py:752
-#, fuzzy
 msgid "Tire Rotation"
-msgstr "Tessie-Integration"
+msgstr "Radwechsel"
 
 #: app/models.py:753
 msgid "Wheel Alignment"
-msgstr ""
+msgstr "Achsvermessung"
 
 #: app/models.py:754
 msgid "Battery Check/Replace"
-msgstr ""
+msgstr "Batterieprüfung/-austausch"
 
 #: app/models.py:755
 msgid "Wiper Blades"
-msgstr ""
+msgstr "Wischblätter"
 
 #: app/models.py:756
 msgid "Full Service"
-msgstr ""
+msgstr "Voller Service"
 
 #: app/models.py:762
-#, fuzzy
 msgid "Insurance Policy"
-msgstr "z.B. Versicherungspolice 2024"
+msgstr "Versicherungspolice"
 
 #: app/models.py:763
-#, fuzzy
 msgid "Registration/V5C"
-msgstr "Registrierung erlauben"
+msgstr "Kraftfahrzeugbrief"
 
 #: app/models.py:764
 msgid "MOT Certificate"
-msgstr ""
+msgstr "TÜV-Bericht"
 
 #: app/models.py:765
-#, fuzzy
 msgid "Service Record"
-msgstr "Wartungsintervall"
+msgstr "Servicebericht"
 
 #: app/models.py:766
 msgid "Purchase Invoice"
-msgstr ""
+msgstr "Rechnung Kauf"
 
 #: app/models.py:767
-#, fuzzy
 msgid "Warranty Document"
-msgstr "Keine Dokumente"
+msgstr "Garantieurkunde"
 
 #: app/models.py:768
 msgid "Owner's Manual"
-msgstr ""
+msgstr "Betriebsanleitung"
 
 #: app/models.py:1118
 msgid "Engine Oil"
-msgstr ""
+msgstr "Motoröl"
 
 #: app/models.py:1122
-#, fuzzy
 msgid "Cabin Filter"
-msgstr "Filtern"
+msgstr "Pollenfilter"
 
 #: app/models.py:1123
-#, fuzzy
 msgid "Spark Plug"
-msgstr "Startseite"
+msgstr "Zündkerze"
 
 #: app/models.py:1124
 msgid "Brake Pad"
-msgstr ""
+msgstr "Bremsklötze"
 
 #: app/models.py:1126
 msgid "Coolant"
-msgstr ""
+msgstr "Kühlflüssigkeit"
 
 #: app/models.py:1128
-#, fuzzy
 msgid "Battery"
-msgstr "Batteriestand"
+msgstr "Batterie"
 
 #: app/models.py:1129
-#, fuzzy
 msgid "Tire"
-msgstr "Titel"
+msgstr "Reifen"
 
 #: app/models.py:1130
-#, fuzzy
 msgid "Belt"
-msgstr "Löschen"
+msgstr "Gurt"
 
 #: app/models.py:1131
 msgid "Wiper Blade"
-msgstr ""
+msgstr "Wischblätter"
 
 #: app/models.py:1132
 msgid "Light Bulb"
-msgstr ""
+msgstr "Glühlampe"
 
 #: app/routes/api.py:2141 app/routes/api.py:2354 app/routes/api.py:2527
 msgid "No file uploaded"
