@@ -414,6 +414,19 @@
                                 </select>
                             </div>
 
+                            <!-- Default Vehicle -->
+                            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                                <label for="default_vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Default Vehicle') }}</label>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ _('Pre-selected vehicle when adding fuel logs, expenses, trips, and charging sessions') }}</p>
+                                <select name="default_vehicle_id" id="default_vehicle_id"
+                                        class="block w-full sm:w-64 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                                    <option value="">{{ _('No default') }}</option>
+                                    {% for vehicle in current_user.get_all_vehicles() %}
+                                    <option value="{{ vehicle.id }}" {% if current_user.default_vehicle_id == vehicle.id %}selected{% endif %}>{{ vehicle.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
                             <!-- Quick Entry Button -->
                             <div class="flex items-center justify-between py-3 border-t border-gray-200 dark:border-gray-700 dark:border-gray-700">
                                 <div>

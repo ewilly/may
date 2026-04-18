@@ -2389,7 +2389,9 @@ def import_clarkson():
                 # Parse CSV-like values (handling quoted strings)
                 values = parse_sql_values(values_str)
                 if len(values) >= 9:
-                    clarkson_id = int(values[0]) if values[0] else None
+                    # Clarkson may use integer IDs or UUIDs — store as string key
+                    raw_id = clean_sql_string(values[0]) if values[0] else None
+                    clarkson_id = raw_id
                     name = clean_sql_string(values[2])
                     registration = clean_sql_string(values[3])
                     make = clean_sql_string(values[4])
@@ -2419,12 +2421,12 @@ def import_clarkson():
             except (ValueError, IndexError) as e:
                 continue
 
-        # Find Fuel INSERT statements
+        # Find Fuel INSERT statements — table may be named `Fuel` or `Fuelups`
         # Clarkson format: INSERT INTO `Fuel` VALUES (id, vehicleId, fuelAmount, fuelUnitCost, totalCost, odometerReading, dateTime, fullTank, missedFillUp, userId, fuelUnit, location, lat, lng)
-        fuel_pattern = r"INSERT INTO [`']?Fuel[`']?\s+(?:VALUES\s*)?\(([^)]+)\)"
+        fuel_pattern = r"INSERT INTO [`']?(?:Fuel|Fuelups)[`']?\s+(?:VALUES\s*)?\(([^)]+)\)"
         fuel_matches = re.findall(fuel_pattern, content, re.IGNORECASE)
 
-        fuel_multi_pattern = r"INSERT INTO [`']?Fuel[`']?[^;]*VALUES\s*((?:\([^)]+\)\s*,?\s*)+)"
+        fuel_multi_pattern = r"INSERT INTO [`']?(?:Fuel|Fuelups)[`']?[^;]*VALUES\s*((?:\([^)]+\)\s*,?\s*)+)"
         fuel_multi_matches = re.findall(fuel_multi_pattern, content, re.IGNORECASE)
 
         for match in fuel_multi_matches:
@@ -2435,7 +2437,7 @@ def import_clarkson():
             try:
                 values = parse_sql_values(values_str)
                 if len(values) >= 10:
-                    clarkson_vehicle_id = int(values[1]) if values[1] else None
+                    clarkson_vehicle_id = clean_sql_string(values[1]) if values[1] else None
                     vehicle_id = vehicle_id_map.get(clarkson_vehicle_id)
                     if not vehicle_id:
                         continue

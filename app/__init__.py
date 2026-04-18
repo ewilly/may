@@ -19,6 +19,7 @@ csrf = CSRFProtect()
 # Supported languages
 LANGUAGES = {
     'en': 'English',
+    'cs': 'Čeština',
     'de': 'Deutsch',
     'es': 'Español',
     'fr': 'Français',

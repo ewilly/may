@@ -81,7 +81,7 @@ def new():
             user_id=current_user.id,
             date=date,
             start_odometer=float(request.form.get('start_odometer')),
-            end_odometer=float(request.form.get('end_odometer')),
+            end_odometer=float(request.form.get('end_odometer')) if request.form.get('end_odometer') else None,
             purpose=request.form.get('purpose'),
             description=request.form.get('description'),
             start_location=request.form.get('start_location'),
@@ -96,7 +96,7 @@ def new():
         return redirect(url_for('trips.index'))
 
     # Pre-select vehicle if provided
-    selected_vehicle_id = request.args.get('vehicle_id', type=int)
+    selected_vehicle_id = request.args.get('vehicle_id', type=int) or current_user.default_vehicle_id
 
     # Get last odometer for selected vehicle
     last_odometer = 0
@@ -130,7 +130,7 @@ def edit(trip_id):
         date_str = request.form.get('date')
         trip.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else trip.date
         trip.start_odometer = float(request.form.get('start_odometer'))
-        trip.end_odometer = float(request.form.get('end_odometer'))
+        trip.end_odometer = float(request.form.get('end_odometer')) if request.form.get('end_odometer') else None
         trip.purpose = request.form.get('purpose')
         trip.description = request.form.get('description')
         trip.start_location = request.form.get('start_location')

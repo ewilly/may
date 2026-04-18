@@ -77,6 +77,7 @@ class User(UserMixin, db.Model):
 
     # Menu preferences
     start_page = db.Column(db.String(50), default='dashboard')  # dashboard, vehicles, fuel, expenses, etc.
+    default_vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=True)
     show_menu_vehicles = db.Column(db.Boolean, default=True)
     show_menu_fuel = db.Column(db.Boolean, default=True)
     show_menu_expenses = db.Column(db.Boolean, default=True)
@@ -1058,7 +1059,7 @@ class Trip(db.Model):
 
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     start_odometer = db.Column(db.Float, nullable=False)
-    end_odometer = db.Column(db.Float, nullable=False)
+    end_odometer = db.Column(db.Float, nullable=True)
 
     purpose = db.Column(db.String(20), nullable=False)  # business, personal, commute, etc.
     description = db.Column(db.String(200))
