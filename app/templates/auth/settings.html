@@ -2104,7 +2104,7 @@ function checkForUpdates() {
     const releaseLinkEl = document.getElementById('release-link');
 
     // Show loading state
-    statusEl.textContent = '{{ _("Checking...") }}';
+    statusEl.textContent = {{ _("Checking...") | tojson }};
     spinnerEl.classList.add('animate-spin');
     updateAvailableEl.classList.add('hidden');
     upToDateEl.classList.add('hidden');
@@ -2116,21 +2116,21 @@ function checkForUpdates() {
 
             if (data.success) {
                 if (data.update_available) {
-                    statusEl.textContent = '{{ _("A newer version is available") }}';
+                    statusEl.textContent = {{ _("A newer version is available") | tojson }};
                     latestVersionEl.textContent = 'v' + data.latest_version;
                     releaseLinkEl.href = data.release_url;
                     updateAvailableEl.classList.remove('hidden');
                 } else {
-                    statusEl.textContent = '{{ _("Last checked just now") }}';
+                    statusEl.textContent = {{ _("Last checked just now") | tojson }};
                     upToDateEl.classList.remove('hidden');
                 }
             } else {
-                statusEl.textContent = '{{ _("Could not check for updates") }}';
+                statusEl.textContent = {{ _("Could not check for updates") | tojson }};
             }
         })
         .catch(err => {
             spinnerEl.classList.remove('animate-spin');
-            statusEl.textContent = '{{ _("Error checking for updates") }}';
+            statusEl.textContent = {{ _("Error checking for updates") | tojson }};
             console.error(err);
         });
 }

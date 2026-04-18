@@ -166,3 +166,28 @@ def delete(expense_id):
     db.session.commit()
     flash(_('Expense deleted successfully'), 'success')
     return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
+
+@bp.route('/<int:expense_id>/attachments/<int:attachment_id>/delete', methods=['POST'])
+@login_required
+def delete_attachment(expense_id, attachment_id):
+    expense = Expense.query.get_or_404(expense_id)
+    vehicles = current_user.get_all_vehicles()
+
+    if expense.vehicle not in vehicles:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('expenses.index'))
+
+    attachment = Attachment.query.get_or_404(attachment_id)
+    if attachment.expense_id != expense_id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('expenses.edit', expense_id=expense_id))
+
+    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], attachment.filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    db.session.delete(attachment)
+    db.session.commit()
+    flash(_('Attachment deleted'), 'success')
+    return redirect(url_for('expenses.edit', expense_id=expense_id))

@@ -478,10 +478,19 @@ def users():
 @admin_required
 def toggle_admin(user_id):
     user = User.query.get_or_404(user_id)
-    if user.id != current_user.id:
-        user.is_admin = not user.is_admin
-        db.session.commit()
-        flash(_('Admin status updated for %(username)s') % {'username': user.username}, 'success')
+    if user.id == current_user.id:
+        return redirect(url_for('auth.users'))
+
+    # Prevent removing admin from the last admin account
+    if user.is_admin:
+        admin_count = User.query.filter_by(is_admin=True).count()
+        if admin_count <= 1:
+            flash(_('Cannot remove admin status from the last administrator.'), 'error')
+            return redirect(url_for('auth.users'))
+
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    flash(_('Admin status updated for %(username)s') % {'username': user.username}, 'success')
 
     return redirect(url_for('auth.users'))
 

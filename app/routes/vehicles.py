@@ -76,7 +76,7 @@ def new():
 
         for i, spec_type in enumerate(spec_types):
             if spec_values[i].strip():  # Only add if value is not empty
-                label = spec_labels[i] if spec_type == 'custom' else dict(VEHICLE_SPEC_TYPES).get(spec_type, spec_labels[i])
+                label = spec_labels[i] if spec_type == 'custom' else str(dict(VEHICLE_SPEC_TYPES).get(spec_type, spec_labels[i]))
                 spec = VehicleSpec(
                     vehicle_id=vehicle.id,
                     spec_type=spec_type,
@@ -124,7 +124,7 @@ def view(vehicle_id):
         'total_expense_cost': vehicle.get_total_expense_cost(),
         'total_cost': vehicle.get_total_cost(),
         'total_distance': vehicle.get_total_distance(vehicle.get_effective_odometer_unit()),
-        'avg_consumption': vehicle.get_average_consumption(current_user.consumption_unit),
+        'avg_consumption': vehicle.get_average_consumption(current_user.consumption_unit, current_user.volume_unit),
         'fuel_logs_count': vehicle.fuel_logs.count(),
         'expenses_count': vehicle.expenses.count()
     }
@@ -207,7 +207,7 @@ def edit(vehicle_id):
 
         for i, spec_type in enumerate(spec_types):
             if spec_values[i].strip():  # Only add if value is not empty
-                label = spec_labels[i] if spec_type == 'custom' else dict(VEHICLE_SPEC_TYPES).get(spec_type, spec_labels[i])
+                label = spec_labels[i] if spec_type == 'custom' else str(dict(VEHICLE_SPEC_TYPES).get(spec_type, spec_labels[i]))
                 spec = VehicleSpec(
                     vehicle_id=vehicle.id,
                     spec_type=spec_type,
@@ -365,7 +365,7 @@ def report(vehicle_id):
         'total_expense_cost': vehicle.get_total_expense_cost(),
         'total_cost': vehicle.get_total_cost(),
         'total_distance': vehicle.get_total_distance(vehicle.get_effective_odometer_unit()),
-        'avg_consumption': vehicle.get_average_consumption(current_user.consumption_unit),
+        'avg_consumption': vehicle.get_average_consumption(current_user.consumption_unit, current_user.volume_unit),
         'fuel_logs_count': len(fuel_logs),
         'expenses_count': len(expenses)
     }

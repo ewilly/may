@@ -193,7 +193,7 @@ def calendar_feed(user):
                 summary=summary,
                 description=description,
                 dtstart=item.next_due,
-                alarm_days=item.remind_days_before or 7
+                alarm_days=item.notify_before_days or 7
             ))
 
     # Document expiry dates
@@ -235,7 +235,7 @@ def calendar_feed(user):
             vehicle_name = vehicle.name if vehicle else 'Vehicle'
 
             summary = f"⏰ {reminder.title} - {vehicle_name}"
-            description = reminder.notes or f"Reminder for {vehicle_name}"
+            description = reminder.description or f"Reminder for {vehicle_name}"
 
             events.append(create_vevent(
                 uid=generate_uid('remind', reminder.id, user.id),

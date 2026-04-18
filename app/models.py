@@ -270,11 +270,12 @@ class Vehicle(db.Model):
             return 0
         return logs[-1].odometer - logs[0].odometer
 
-    def get_average_consumption(self, consumption_unit=None):
+    def get_average_consumption(self, consumption_unit=None, volume_unit='L'):
         """Calculate average fuel consumption.
 
         Args:
             consumption_unit: 'L/100km', 'mpg', or 'mpg_us'. If None, returns L/100km.
+            volume_unit: 'L', 'gal' (UK), or 'us_gal'. Used to convert volume for MPG.
         """
         logs = self.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.odometer).all()
         if len(logs) < 2:
@@ -284,9 +285,14 @@ class Vehicle(db.Model):
         total_distance = logs[-1].odometer - logs[0].odometer
 
         if total_distance > 0 and total_fuel > 0:
-            if consumption_unit in ('mpg', 'mpg_us'):
-                return total_distance / total_fuel
-            return (total_fuel / total_distance) * 100  # L/100km
+            if consumption_unit == 'mpg':
+                gallons = _to_uk_gallons(total_fuel, volume_unit)
+                return total_distance / gallons if gallons > 0 else None
+            if consumption_unit == 'mpg_us':
+                gallons = _to_us_gallons(total_fuel, volume_unit)
+                return total_distance / gallons if gallons > 0 else None
+            litres = _to_litres(total_fuel, volume_unit)
+            return (litres / total_distance) * 100  # L/100km
         return None
 
     def uses_tessie_odometer(self):
@@ -371,6 +377,30 @@ class Vehicle(db.Model):
         }
 
 
+def _to_litres(volume, volume_unit):
+    if volume_unit == 'gal':
+        return volume * 4.54609
+    if volume_unit == 'us_gal':
+        return volume * 3.78541
+    return volume  # already litres
+
+
+def _to_uk_gallons(volume, volume_unit):
+    if volume_unit == 'gal':
+        return volume
+    if volume_unit == 'us_gal':
+        return volume * 3.78541 / 4.54609
+    return volume / 4.54609  # litres to UK gallons
+
+
+def _to_us_gallons(volume, volume_unit):
+    if volume_unit == 'us_gal':
+        return volume
+    if volume_unit == 'gal':
+        return volume * 4.54609 / 3.78541
+    return volume / 3.78541  # litres to US gallons
+
+
 class FuelLog(db.Model):
     __tablename__ = 'fuel_logs'
 
@@ -396,11 +426,12 @@ class FuelLog(db.Model):
     attachments = db.relationship('Attachment', backref='fuel_log', lazy='dynamic',
                                   cascade='all, delete-orphan')
 
-    def get_consumption(self, consumption_unit=None):
+    def get_consumption(self, consumption_unit=None, volume_unit='L'):
         """Calculate consumption for this fill-up.
 
         Args:
             consumption_unit: 'L/100km', 'mpg', or 'mpg_us'. If None, returns L/100km.
+            volume_unit: 'L', 'gal' (UK), or 'us_gal'. Used to convert volume for MPG.
         """
         if not self.is_full_tank or not self.volume:
             return None
@@ -414,14 +445,19 @@ class FuelLog(db.Model):
         if prev_log:
             distance = self.odometer - prev_log.odometer
             if distance > 0 and self.volume > 0:
-                if consumption_unit in ('mpg', 'mpg_us'):
-                    return distance / self.volume
-                return (self.volume / distance) * 100  # L/100km
+                if consumption_unit == 'mpg':
+                    gallons = _to_uk_gallons(self.volume, volume_unit)
+                    return distance / gallons if gallons > 0 else None
+                if consumption_unit == 'mpg_us':
+                    gallons = _to_us_gallons(self.volume, volume_unit)
+                    return distance / gallons if gallons > 0 else None
+                litres = _to_litres(self.volume, volume_unit)
+                return (litres / distance) * 100  # L/100km
         return None
 
-    def to_dict(self, consumption_unit=None):
+    def to_dict(self, consumption_unit=None, volume_unit='L'):
         """Serialize fuel log to dictionary for API"""
-        consumption = self.get_consumption(consumption_unit)
+        consumption = self.get_consumption(consumption_unit, volume_unit)
         return {
             'id': self.id,
             'vehicle_id': self.vehicle_id,

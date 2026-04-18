@@ -18,6 +18,7 @@
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         {% for vehicle in vehicles %}
                         <option value="{{ vehicle.id }}"
+                                data-odometer-unit="{{ vehicle.get_effective_odometer_unit() }}"
                                 {% if (expense and expense.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}>
                             {{ vehicle.name }}
                         </option>
@@ -58,7 +59,7 @@
                 </div>
 
                 <div>
-                    <label for="odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Odometer ({{ current_user.distance_unit }})</label>
+                    <label for="odometer" id="odometer-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Odometer ({{ current_user.distance_unit }})</label>
                     <input type="number" name="odometer" id="odometer" step="0.1"
                            value="{{ expense.odometer if expense else '' }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
@@ -82,8 +83,12 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Receipt / Attachment</label>
                     {% if expense %}
                     {% for attachment in expense.attachments.all() %}
-                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Current: <a href="{{ url_for('api.uploaded_file', filename=attachment.filename) }}" target="_blank" class="text-primary-600 hover:text-primary-500">{{ attachment.original_filename }}</a>
+                    <div class="mt-2 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                        <a href="{{ url_for('api.uploaded_file', filename=attachment.filename) }}" target="_blank" class="text-primary-600 hover:text-primary-500">{{ attachment.original_filename }}</a>
+                        <form method="POST" action="{{ url_for('expenses.delete_attachment', expense_id=expense.id, attachment_id=attachment.id) }}" onsubmit="return confirm('Delete this attachment?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="text-red-600 hover:text-red-800 text-xs">Delete</button>
+                        </form>
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -106,4 +111,24 @@
     </form>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function() {
+        const vehicleSelect = document.getElementById('vehicle_id');
+        const odometerLabel = document.getElementById('odometer-label');
+
+        function updateOdometerUnit() {
+            const selected = vehicleSelect.options[vehicleSelect.selectedIndex];
+            const unit = selected ? selected.dataset.odometerUnit : '{{ current_user.distance_unit }}';
+            if (unit) {
+                odometerLabel.textContent = odometerLabel.textContent.replace(/\([^)]*\)/, '(' + unit + ')');
+            }
+        }
+
+        vehicleSelect.addEventListener('change', updateOdometerUnit);
+        updateOdometerUnit();
+    })();
+</script>
 {% endblock %}

@@ -138,13 +138,18 @@ def get_monthly_spending(vehicle_ids):
     fuel_costs = []
     expense_costs = []
 
+    now = datetime.now()
     for i in range(5, -1, -1):
-        date = datetime.now() - timedelta(days=i * 30)
-        month_start = date.replace(day=1)
-        if date.month == 12:
-            month_end = date.replace(year=date.year + 1, month=1, day=1)
+        month = now.month - i
+        year = now.year
+        while month <= 0:
+            month += 12
+            year -= 1
+        month_start = now.replace(year=year, month=month, day=1, hour=0, minute=0, second=0, microsecond=0)
+        if month == 12:
+            month_end = month_start.replace(year=year + 1, month=1, day=1)
         else:
-            month_end = date.replace(month=date.month + 1, day=1)
+            month_end = month_start.replace(month=month + 1, day=1)
 
         months.append(month_start.strftime('%b'))
 

@@ -241,6 +241,31 @@ def delete(log_id):
     return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
 
 
+@bp.route('/<int:log_id>/attachments/<int:attachment_id>/delete', methods=['POST'])
+@login_required
+def delete_attachment(log_id, attachment_id):
+    log = FuelLog.query.get_or_404(log_id)
+    vehicles = current_user.get_all_vehicles()
+
+    if log.vehicle not in vehicles:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('fuel.index'))
+
+    attachment = Attachment.query.get_or_404(attachment_id)
+    if attachment.fuel_log_id != log_id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('fuel.edit', log_id=log_id))
+
+    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], attachment.filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    db.session.delete(attachment)
+    db.session.commit()
+    flash(_('Attachment deleted'), 'success')
+    return redirect(url_for('fuel.edit', log_id=log_id))
+
+
 @bp.route('/quick', methods=['GET', 'POST'])
 @login_required
 def quick():

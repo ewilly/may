@@ -274,7 +274,7 @@ def vehicle_stats(vehicle_id):
     logs = vehicle.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.date).all()
     consumption_data = []
     for log in logs:
-        consumption = log.get_consumption(current_user.consumption_unit)
+        consumption = log.get_consumption(current_user.consumption_unit, current_user.volume_unit)
         if consumption:
             consumption_data.append({
                 'date': log.date.isoformat(),
@@ -296,7 +296,7 @@ def vehicle_stats(vehicle_id):
         'total_fuel_cost': vehicle.get_total_fuel_cost(),
         'total_expense_cost': vehicle.get_total_expense_cost(),
         'total_distance': vehicle.get_total_distance(vehicle.get_effective_odometer_unit()),
-        'avg_consumption': vehicle.get_average_consumption(current_user.consumption_unit)
+        'avg_consumption': vehicle.get_average_consumption(current_user.consumption_unit, current_user.volume_unit)
     })
 
 
@@ -2771,15 +2771,17 @@ def parse_date_value(value, date_format='auto'):
     value = value.strip()
 
     if date_format == 'DD/MM/YYYY':
-        formats = ['%d/%m/%Y', '%d-%m-%Y', '%d.%m.%Y', '%d/%m/%y']
+        formats = ['%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M', '%d/%m/%Y', '%d-%m-%Y', '%d.%m.%Y', '%d/%m/%y']
     elif date_format == 'MM/DD/YYYY':
-        formats = ['%m/%d/%Y', '%m-%d-%Y', '%m/%d/%y']
+        formats = ['%m/%d/%Y %H:%M:%S', '%m/%d/%Y %H:%M', '%m/%d/%Y', '%m-%d-%Y', '%m/%d/%y']
     elif date_format == 'YYYY-MM-DD':
-        formats = ['%Y-%m-%d', '%Y/%m/%d']
+        formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y/%m/%d']
     else:
         # Auto-detect: try unambiguous formats first
-        formats = ['%Y-%m-%d', '%Y/%m/%d', '%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y',
-                   '%m-%d-%Y', '%d.%m.%Y', '%d/%m/%y', '%m/%d/%y', '%Y-%m-%d %H:%M:%S']
+        formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y/%m/%d',
+                   '%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M', '%d/%m/%Y',
+                   '%m/%d/%Y %H:%M:%S', '%m/%d/%Y %H:%M', '%m/%d/%Y',
+                   '%d-%m-%Y', '%m-%d-%Y', '%d.%m.%Y', '%d/%m/%y', '%m/%d/%y']
 
     for fmt in formats:
         try:
