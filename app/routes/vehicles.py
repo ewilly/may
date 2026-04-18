@@ -76,7 +76,7 @@ def new():
 
         for i, spec_type in enumerate(spec_types):
             if spec_values[i].strip():  # Only add if value is not empty
-                label = spec_labels[i] if spec_type == 'custom' else dict(VEHICLE_SPEC_TYPES).get(spec_type, spec_labels[i])
+                label = spec_labels[i] if spec_type == 'custom' else str(dict(VEHICLE_SPEC_TYPES).get(spec_type, spec_labels[i]))
                 spec = VehicleSpec(
                     vehicle_id=vehicle.id,
                     spec_type=spec_type,
@@ -207,7 +207,7 @@ def edit(vehicle_id):
 
         for i, spec_type in enumerate(spec_types):
             if spec_values[i].strip():  # Only add if value is not empty
-                label = spec_labels[i] if spec_type == 'custom' else dict(VEHICLE_SPEC_TYPES).get(spec_type, spec_labels[i])
+                label = spec_labels[i] if spec_type == 'custom' else str(dict(VEHICLE_SPEC_TYPES).get(spec_type, spec_labels[i]))
                 spec = VehicleSpec(
                     vehicle_id=vehicle.id,
                     spec_type=spec_type,

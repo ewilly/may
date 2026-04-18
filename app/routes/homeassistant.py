@@ -193,7 +193,7 @@ def vehicle_stats(vehicle_id, user):
         avg_consumption = 0
 
     # Calculate expense totals
-    total_expenses = expense_query.with_entities(func.sum(Expense.amount)).scalar() or 0
+    total_expenses = expense_query.with_entities(func.sum(Expense.cost)).scalar() or 0
 
     # Get last fill date
     last_fill = FuelLog.query.filter_by(vehicle_id=vehicle.id).order_by(
@@ -340,7 +340,7 @@ def summary(user):
 
         # Get expense totals
         expenses = Expense.query.filter_by(vehicle_id=vehicle.id).with_entities(
-            func.sum(Expense.amount)
+            func.sum(Expense.cost)
         ).scalar() or 0
         total_expenses += float(expenses)
 
