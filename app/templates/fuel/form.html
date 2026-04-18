@@ -58,7 +58,7 @@
 
                 <div>
                     <label for="volume" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Volume ({{ current_user.volume_unit }})</label>
-                    <input type="number" name="volume" id="volume" step="0.01"
+                    <input type="number" name="volume" id="volume" step="0.001"
                            value="{{ log.volume if log else '' }}"
                            onchange="calculateTotal()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">

@@ -340,6 +340,8 @@ def notifications():
 def menu_preferences():
     """Update user menu preferences"""
     current_user.start_page = request.form.get('start_page', 'dashboard')
+    default_vehicle_id = request.form.get('default_vehicle_id')
+    current_user.default_vehicle_id = int(default_vehicle_id) if default_vehicle_id else None
     current_user.show_menu_vehicles = request.form.get('show_menu_vehicles') == 'on'
     current_user.show_menu_fuel = request.form.get('show_menu_fuel') == 'on'
     current_user.show_menu_expenses = request.form.get('show_menu_expenses') == 'on'

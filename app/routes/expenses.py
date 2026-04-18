@@ -87,7 +87,7 @@ def new():
         return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
 
     # Pre-select vehicle if provided
-    selected_vehicle_id = request.args.get('vehicle_id', type=int)
+    selected_vehicle_id = request.args.get('vehicle_id', type=int) or current_user.default_vehicle_id
 
     return render_template('expenses/form.html',
                            expense=None,

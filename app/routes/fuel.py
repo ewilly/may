@@ -133,8 +133,8 @@ def new():
         flash(_('Fuel log added successfully'), 'success')
         return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
 
-    # Pre-select vehicle if provided
-    selected_vehicle_id = request.args.get('vehicle_id', type=int)
+    # Pre-select vehicle: explicit param > default vehicle preference
+    selected_vehicle_id = request.args.get('vehicle_id', type=int) or current_user.default_vehicle_id
 
     # Get all fuel stations for dropdown (stations are system-wide)
     stations = FuelStation.query.order_by(
@@ -161,6 +161,11 @@ def edit(log_id):
         return redirect(url_for('fuel.index'))
 
     if request.method == 'POST':
+        new_vehicle_id = request.form.get('vehicle_id', type=int)
+        if new_vehicle_id:
+            new_vehicle = Vehicle.query.get_or_404(new_vehicle_id)
+            if new_vehicle in vehicles:
+                log.vehicle_id = new_vehicle_id
         date_str = request.form.get('date')
         log.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else log.date
         log.odometer = float(request.form.get('odometer'))

@@ -64,8 +64,8 @@
                 </div>
 
                 <div>
-                    <label for="end_odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('End Odometer') }} ({{ current_user.distance_unit }}) *</label>
-                    <input type="number" name="end_odometer" id="end_odometer" required step="0.1"
+                    <label for="end_odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('End Odometer') }} ({{ current_user.distance_unit }})</label>
+                    <input type="number" name="end_odometer" id="end_odometer" step="0.1"
                            value="{{ trip.end_odometer if trip else '' }}"
                            onchange="calculateDistance()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
