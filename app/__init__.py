@@ -91,6 +91,7 @@ def _run_schema_migrations(app):
             ('date_format', "VARCHAR(20) DEFAULT 'DD/MM/YYYY'"),
             ('password_reset_token', 'VARCHAR(100)'),
             ('password_reset_expires', 'DATETIME'),
+            ('default_vehicle_id', 'INTEGER'),
         ],
         'charging_sessions': [
             ('tessie_charge_id', 'VARCHAR(50)'),
